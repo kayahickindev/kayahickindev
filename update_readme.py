@@ -2,10 +2,9 @@
 
 Runs daily via GitHub Actions. Always updates the Uptime line. If an
 ACCESS_TOKEN env var is present (a PAT with repo read access), also refreshes
-repo/PR/commit/follower/LOC numbers by summing per-author contributor stats
-across owned and contributed repos. Without a token the stats are left at
-their last committed values rather than being clobbered with public-only
-counts.
+repo/PR/follower/LOC numbers and the rolling contribution total shown by the
+GitHub profile calendar. Without a token the stats are left at their last
+committed values rather than being clobbered with public-only counts.
 
 Layout invariant: every value tspan has a sibling dots tspan; when a value's
 length changes, the dots shrink/grow by the same amount so the right edge of
@@ -27,8 +26,8 @@ API = "https://api.github.com"
 # value ids on one line -> the dots tspan that absorbs their length changes
 LINE_GROUPS = [
     (("age_data",), "age_data_dots"),
-    (("repo_data", "contrib_data", "pr_data"), "pr_data_dots"),
-    (("commit_data", "follower_data"), "follower_data_dots"),
+    (("repo_data", "pr_data"), "pr_data_dots"),
+    (("contribution_data", "follower_data"), "follower_data_dots"),
     (("loc_data", "loc_add", "loc_del"), "loc_data_dots"),
 ]
 
@@ -83,13 +82,37 @@ def fetch_stats(token):
     prs_merged = pr_search["total_count"]
 
     _, gql = gh("/graphql", token, method="POST", body={"query": """
-      { viewer { repositoriesContributedTo(first: 100, contributionTypes: [COMMIT])
-        { totalCount nodes { nameWithOwner } } } }"""})
+      query($login: String!) {
+        user(login: $login) {
+          contributionsCollection {
+            startedAt
+            endedAt
+            contributionCalendar { totalContributions }
+          }
+        }
+        viewer {
+          repositoriesContributedTo(first: 100, contributionTypes: [COMMIT]) {
+            nodes { nameWithOwner }
+          }
+        }
+      }""", "variables": {"login": LOGIN}})
+    if gql.get("errors"):
+        raise RuntimeError(f"GitHub GraphQL error: {gql['errors']}")
+    collection = gql["data"]["user"]["contributionsCollection"]
+    contribution_total = collection["contributionCalendar"]["totalContributions"]
+    print(
+        "GitHub contribution calendar: "
+        f"{collection['startedAt']} to {collection['endedAt']} = "
+        f"{contribution_total:,}"
+    )
     contributed = gql["data"]["viewer"]["repositoriesContributedTo"]
-    contrib_count = contributed["totalCount"]
 
-    names = [r["full_name"] for r in owned] + [n["nameWithOwner"] for n in contributed["nodes"]]
-    commits = adds = dels = 0
+    names = list(dict.fromkeys(
+        [r["full_name"] for r in owned]
+        + [n["nameWithOwner"] for n in contributed["nodes"]]
+    ))
+    adds = dels = 0
+    loc_available = True
     for name in names:
         contributors = None
         for attempt in range(8):
@@ -99,26 +122,30 @@ def fetch_stats(token):
                 break
             time.sleep(5 + attempt * 3)  # 202: stats cache still generating
         if contributors is None:
-            # partial data would understate the totals; keep last committed values
-            print(f"stats for {name} unavailable, skipping stats refresh")
-            return None
+            # Partial data would understate LOC. Keep the last committed LOC,
+            # but still publish the independently verified calendar total.
+            print(f"stats for {name} unavailable; keeping previous LOC values")
+            loc_available = False
+            break
         for c in contributors:
             if (c.get("author") or {}).get("login") == LOGIN:
-                commits += c["total"]
                 for w in c["weeks"]:
                     adds += w["a"]
                     dels += w["d"]
 
-    return {
+    values = {
         "repo_data": f"{len(owned)}",
-        "contrib_data": f"{contrib_count}",
         "pr_data": f"{prs_merged:,}",
         "follower_data": f"{followers}",
-        "commit_data": f"{commits:,}",
-        "loc_data": f"{adds - dels:,}",
-        "loc_add": f"{adds:,}",
-        "loc_del": f"{dels:,}",
+        "contribution_data": f"{contribution_total:,}",
     }
+    if loc_available:
+        values.update({
+            "loc_data": f"{adds - dels:,}",
+            "loc_add": f"{adds:,}",
+            "loc_del": f"{dels:,}",
+        })
+    return values
 
 
 def tspan_pattern(tid):
