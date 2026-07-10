@@ -2,7 +2,7 @@
 
 Runs daily via GitHub Actions. Always updates the Uptime line. If an
 ACCESS_TOKEN env var is present (a PAT with repo read access), also refreshes
-repo/star/commit/follower/LOC numbers by summing per-author contributor stats
+repo/PR/commit/follower/LOC numbers by summing per-author contributor stats
 across owned and contributed repos. Without a token the stats are left at
 their last committed values rather than being clobbered with public-only
 counts.
@@ -27,7 +27,7 @@ API = "https://api.github.com"
 # value ids on one line -> the dots tspan that absorbs their length changes
 LINE_GROUPS = [
     (("age_data",), "age_data_dots"),
-    (("repo_data", "contrib_data", "star_data"), "star_data_dots"),
+    (("repo_data", "contrib_data", "pr_data"), "pr_data_dots"),
     (("commit_data", "follower_data"), "follower_data_dots"),
     (("loc_data", "loc_add", "loc_del"), "loc_data_dots"),
 ]
@@ -78,7 +78,9 @@ def fetch_stats(token):
         if len(repos) < 100:
             break
         page += 1
-    stars = sum(r["stargazers_count"] for r in owned)
+
+    _, pr_search = gh(f"/search/issues?q=type:pr+author:{LOGIN}+is:merged&per_page=1", token)
+    prs_merged = pr_search["total_count"]
 
     _, gql = gh("/graphql", token, method="POST", body={"query": """
       { viewer { repositoriesContributedTo(first: 100, contributionTypes: [COMMIT])
@@ -110,7 +112,7 @@ def fetch_stats(token):
     return {
         "repo_data": f"{len(owned)}",
         "contrib_data": f"{contrib_count}",
-        "star_data": f"{stars}",
+        "pr_data": f"{prs_merged:,}",
         "follower_data": f"{followers}",
         "commit_data": f"{commits:,}",
         "loc_data": f"{adds - dels:,}",
