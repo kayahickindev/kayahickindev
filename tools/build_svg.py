@@ -1,5 +1,11 @@
 """Build dark_mode.svg and light_mode.svg for the kayahickindev profile README."""
+import argparse
 import re
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent
 
 COLS, ROWS = 37, 25
 WIDTH = 63  # right-column line width in chars
@@ -8,9 +14,14 @@ FS = 16
 LINE_H = 20
 Y0 = 30
 
-# ---- ASCII art (from ascii_gen.py) + hand-curation of stray bokeh ----
-with open("ascii_art.txt") as f:
-    art_lines = f.read().split("\n")
+# ---- ASCII portrait ----
+parser = argparse.ArgumentParser()
+parser.add_argument("--art", type=Path, default=HERE / "ascii_art_C.txt")
+parser.add_argument("--output-dir", type=Path, default=ROOT)
+parser.add_argument("--stats-from", type=Path, default=ROOT / "dark_mode.svg")
+args = parser.parse_args()
+
+art_lines = args.art.read_text(encoding="utf-8").splitlines()
 while len(art_lines) < ROWS:
     art_lines.append("")
 
@@ -35,10 +46,28 @@ LIGHT = dict(bg="#fffefe", fg="#24292f", key="#953800", value="#0a3069",
 # ---- right-column content ----
 STATS = {
     "age": "22 years, 5 months, 21 days",
-    "repos": "10", "contrib": "3", "prs": "576",
-    "commits": "3,394", "followers": "9",
-    "loc": "1,116,739", "loc_add": "1,914,957", "loc_del": "798,218",
+    "repos": "10", "prs": "591",
+    "contributions": "4,360", "followers": "9",
+    "loc": "1,173,763", "loc_add": "1,978,907", "loc_del": "805,144",
 }
+
+# Rebuilding the card should preserve the most recently refreshed dynamic
+# values instead of resetting them to the fallback snapshot above.
+ID_TO_STAT = {
+    "age_data": "age",
+    "repo_data": "repos",
+    "pr_data": "prs",
+    "contribution_data": "contributions",
+    "follower_data": "followers",
+    "loc_data": "loc",
+    "loc_add": "loc_add",
+    "loc_del": "loc_del",
+}
+if args.stats_from.exists():
+    for element in ET.parse(args.stats_from).getroot().iter():
+        stat = ID_TO_STAT.get(element.attrib.get("id"))
+        if stat and element.text:
+            STATS[stat] = element.text
 
 def header(label):
     # label + space + rule to full width
@@ -90,17 +119,6 @@ def line_kv2(n1, v1, id1, n2, v2, id2):
 def dot_line():
     return f'<tspan x="{X_RIGHT}" y="{{y}}" class="cc">. </tspan>'
 
-# Repos line: Repos: N {Contributed: M} | PRs Merged: P
-def repos_line():
-    v1 = (f'<tspan class="value" id="repo_data">{STATS["repos"]}</tspan> '
-          f'{{<tspan class="key">Contributed</tspan>: '
-          f'<tspan class="value" id="contrib_data">{STATS["contrib"]}</tspan>}}')
-    l1 = len(STATS["repos"]) + 2 + len("Contributed") + 2 + len(STATS["contrib"]) + 1
-    return kv([('<tspan class="key">Repos</tspan>', 5, v1, l1, "repo_data"),
-               ('<tspan class="key">PRs Merged</tspan>', 10,
-                f'<tspan class="value" id="pr_data">{STATS["prs"]}</tspan>',
-                len(STATS["prs"]), "pr_data")])
-
 def loc_line():
     k = ('<tspan class="key">Lines of Code on GitHub</tspan>')
     tail = (f'<tspan class="value" id="loc_data">{STATS["loc"]}</tspan> '
@@ -121,7 +139,7 @@ rows = [
     line_kv("Uptime", STATS["age"], "age_data"),
     line_kv("Host", "MyFutureSelf, Inc."),
     line_kv("Kernel", "Founder & CTO"),
-    line_kv("IDE", "Xcode 16.4, Claude Code, Codex"),
+    line_kv("Toolchain", "Claude Code, Codex, Ghostty"),
     dot_line(),
     line_kv("Languages.Programming", "Swift, TypeScript, Python"),
     line_kv("Languages.Frameworks", "SwiftUI, React Native, Firebase"),
@@ -138,8 +156,9 @@ rows = [
     line_kv("X", "@KayaHickin"),
     None,
     header("- GitHub Stats"),
-    repos_line(),
-    line_kv2("Commits", STATS["commits"], "commit_data",
+    line_kv2("Repos", STATS["repos"], "repo_data",
+             "PRs Merged", STATS["prs"], "pr_data"),
+    line_kv2("Contributions (1y)", STATS["contributions"], "contribution_data",
              "Followers", STATS["followers"], "follower_data"),
     loc_line(),
 ]
@@ -180,11 +199,10 @@ text, tspan {{white-space: pre;}}
     out.append("</svg>")
     return "\n".join(out) + "\n"
 
-with open("dark_mode.svg", "w") as f:
-    f.write(build(DARK))
-with open("light_mode.svg", "w") as f:
-    f.write(build(LIGHT))
-print("wrote dark_mode.svg, light_mode.svg")
+args.output_dir.mkdir(parents=True, exist_ok=True)
+for filename, palette in (("dark_mode.svg", DARK), ("light_mode.svg", LIGHT)):
+    (args.output_dir / filename).write_text(build(palette), encoding="utf-8")
+print(f"wrote {args.output_dir / 'dark_mode.svg'}, {args.output_dir / 'light_mode.svg'}")
 
 # sanity: report rendered char width of each right-column line
 plain = re.compile(r"<[^>]+>")
@@ -193,4 +211,6 @@ for i, row in enumerate(rows):
         continue
     txt = plain.sub("", row.replace("{y}", "0"))
     txt = txt.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
+    if txt != ". ":
+        assert len(txt) == WIDTH, (i, len(txt), txt)
     print(f"{i:2d} len={len(txt):3d} |{txt}")
