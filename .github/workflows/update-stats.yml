@@ -8,17 +8,25 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: profile-data-refresh
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Refresh SVG stats
         env:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          REQUIRE_GITHUB_STATS: "1"
+          PROFILE_SITE_URL: https://www.kayahickin.com
+          PROFILE_SITE_MAX_AGE_HOURS: "48"
         run: python update_readme.py
       - name: Commit and push if changed
         run: |

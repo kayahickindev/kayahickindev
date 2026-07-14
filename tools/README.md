@@ -26,5 +26,8 @@ Layout constraints: real character advance is 9.6px at font size 16 (the
 `size-adjust: 109%` rule), so art stays at or below 37 columns at x=15 and the
 right column sits at x=375 with 63-character content lines. The builder asserts
 that alignment. `update_readme.py` rewrites the dynamic tspan values by id each
-night; if a stat is renamed, update `LINE_GROUPS` and keep its sibling
-`*_dots` tspan.
+night. Product traction is read from the fresh snapshot rendered by
+`kayahickin.com`; GitHub activity and LOC are refreshed with an authenticated
+GitHub token. The update fails instead of publishing fallback site data or a
+partial LOC total. If a stat is renamed, update `LINE_GROUPS` and keep its
+sibling `*_dots` tspan.
