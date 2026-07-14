@@ -1,5 +1,4 @@
 import io
-import json
 import tempfile
 import unittest
 import urllib.error
@@ -51,8 +50,8 @@ class ProfileCardTests(unittest.TestCase):
             self.assertNotIn('id="commit_data"', svg)
 
     @staticmethod
-    def site_html(generated_at="2026-07-14T04:15:41.262Z"):
-        snapshot = {
+    def site_snapshot(generated_at="2026-07-14T04:15:41.262Z"):
+        return {
             "generatedAt": generated_at,
             "metrics": {
                 "appDownloads": {"raw": 30000},
@@ -64,20 +63,15 @@ class ProfileCardTests(unittest.TestCase):
                 "arr": {"raw": 113032},
             },
         }
-        payload = f'10:["$","component",null,{{"metrics":{json.dumps(snapshot)}}}]'
-        return (
-            "<html><script>self.__next_f.push([1,"
-            + json.dumps(payload)
-            + "])</script></html>"
-        )
 
     def test_personal_site_snapshot_drives_traction_values(self):
         now = datetime(2026, 7, 14, 12, tzinfo=timezone.utc)
         with mock.patch.object(
-            update_readme, "fetch_url", return_value=self.site_html()
+            update_readme, "fetch_json_url", return_value=self.site_snapshot()
         ):
-            values = update_readme.fetch_site_stats(now=now)
+            values, generated_at = update_readme.fetch_site_stats(now=now)
 
+        self.assertEqual(generated_at, "2026-07-14T04:15:41.262Z")
         self.assertEqual(values["downloads_data"], "30K+")
         self.assertEqual(values["paid_data"], "2,737+")
         self.assertEqual(values["arr_data"], "$113K+")
@@ -88,7 +82,7 @@ class ProfileCardTests(unittest.TestCase):
     def test_stale_personal_site_snapshot_is_rejected(self):
         now = datetime(2026, 7, 17, 12, tzinfo=timezone.utc)
         with mock.patch.object(
-            update_readme, "fetch_url", return_value=self.site_html()
+            update_readme, "fetch_json_url", return_value=self.site_snapshot()
         ):
             with self.assertRaisesRegex(RuntimeError, "not fresh"):
                 update_readme.fetch_site_stats(now=now)
@@ -164,7 +158,10 @@ class ProfileCardTests(unittest.TestCase):
                 }
             raise AssertionError(path)
 
-        with mock.patch.object(update_readme, "gh", side_effect=fake_gh):
+        with (
+            mock.patch.object(update_readme, "gh", side_effect=fake_gh),
+            mock.patch.object(update_readme, "fetch_repo_head", return_value="head-1"),
+        ):
             values = update_readme.fetch_stats("secret")
 
         self.assertEqual(values["contribution_data"], "4,360")
@@ -212,7 +209,10 @@ class ProfileCardTests(unittest.TestCase):
                 return 200, {"Python": 100}
             raise AssertionError(path)
 
-        with mock.patch.object(update_readme, "gh", side_effect=fake_gh):
+        with (
+            mock.patch.object(update_readme, "gh", side_effect=fake_gh),
+            mock.patch.object(update_readme, "fetch_repo_head", return_value="head-1"),
+        ):
             with self.assertRaisesRegex(RuntimeError, "GraphQL error"):
                 update_readme.fetch_stats("secret")
 
@@ -271,7 +271,10 @@ class ProfileCardTests(unittest.TestCase):
                 return 200, {}
             raise AssertionError(path)
 
-        with mock.patch.object(update_readme, "gh", side_effect=fake_gh):
+        with (
+            mock.patch.object(update_readme, "gh", side_effect=fake_gh),
+            mock.patch.object(update_readme, "fetch_repo_head", return_value="head-1"),
+        ):
             values = update_readme.fetch_stats("secret")
 
         self.assertEqual(values["loc_data"], "15")
@@ -340,6 +343,69 @@ class ProfileCardTests(unittest.TestCase):
 
         self.assertEqual(additions, 28)
         self.assertEqual(deletions, 8)
+
+    def test_unchanged_repository_reuses_cached_loc(self):
+        cache = {
+            "kayahickindev/example": {
+                "headOid": "same-head",
+                "additions": 120,
+                "deletions": 20,
+            }
+        }
+        with (
+            mock.patch.object(
+                update_readme, "fetch_repo_head", return_value="same-head"
+            ),
+            mock.patch.object(update_readme, "fetch_repo_loc") as fetch_repo_loc,
+        ):
+            result = update_readme.fetch_cached_repo_loc(
+                "kayahickindev/example", "U_1", "secret", cache
+            )
+
+        self.assertEqual(result[:2], (120, 20))
+        fetch_repo_loc.assert_not_called()
+
+    def test_changed_repository_refreshes_cached_loc(self):
+        cache = {
+            "kayahickindev/example": {
+                "headOid": "old-head",
+                "additions": 120,
+                "deletions": 20,
+            }
+        }
+        with (
+            mock.patch.object(
+                update_readme, "fetch_repo_head", return_value="new-head"
+            ),
+            mock.patch.object(
+                update_readme, "fetch_repo_loc", return_value=(150, 30)
+            ) as fetch_repo_loc,
+        ):
+            result = update_readme.fetch_cached_repo_loc(
+                "kayahickindev/example", "U_1", "secret", cache
+            )
+
+        self.assertEqual(result[:2], (150, 30))
+        self.assertEqual(result[2]["headOid"], "new-head")
+        fetch_repo_loc.assert_called_once()
+
+    def test_refresh_state_gates_same_day_fallback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state_path = Path(directory) / "state.json"
+            state_path.write_text(
+                '{"refreshedOn":"2026-07-14"}\n', encoding="utf-8"
+            )
+
+            self.assertTrue(
+                update_readme.refreshed_today(
+                    state_path, today=date(2026, 7, 14)
+                )
+            )
+            self.assertFalse(
+                update_readme.refreshed_today(
+                    state_path, today=date(2026, 7, 15)
+                )
+            )
 
     def test_svg_value_update_preserves_line_width(self):
         source = ROOT / "dark_mode.svg"

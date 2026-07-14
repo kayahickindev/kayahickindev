@@ -1,7 +1,8 @@
 """Refresh the live data baked into dark_mode.svg / light_mode.svg.
 
-Runs daily via GitHub Actions. MyFutureSelf traction comes from the fresh
-snapshot rendered by kayahickin.com; GitHub activity comes from the GitHub API.
+Runs after kayahickin.com publishes its daily snapshot, with a late-day
+fallback in GitHub Actions. MyFutureSelf traction comes from the site's public
+JSON snapshot; GitHub activity comes from the GitHub API.
 The workflow requires an ACCESS_TOKEN with private-repo read access so that the
 GitHub and lines-of-code totals cannot silently degrade to public-only data.
 
@@ -22,8 +23,14 @@ BIRTHDATE = date(2004, 1, 19)
 LOGIN = "kayahickindev"
 SVGS = ["dark_mode.svg", "light_mode.svg"]
 API = "https://api.github.com"
-SITE_URL = os.environ.get("PROFILE_SITE_URL", "https://www.kayahickin.com")
+METRICS_URL = os.environ.get(
+    "PROFILE_METRICS_URL", "https://kayahickin.com/api/profile-metrics"
+)
 SITE_MAX_AGE_HOURS = int(os.environ.get("PROFILE_SITE_MAX_AGE_HOURS", "48"))
+LOC_CACHE_PATH = os.environ.get("LOC_CACHE_PATH", "loc_cache.json")
+REFRESH_STATE_PATH = os.environ.get(
+    "PROFILE_REFRESH_STATE_PATH", "profile_refresh_state.json"
+)
 
 REQUIRED_SITE_METRICS = (
     "appDownloads",
@@ -32,14 +39,6 @@ REQUIRED_SITE_METRICS = (
     "futureSelfActions",
     "paidSubscribersEver",
     "arr",
-)
-
-# Next.js serializes server-component props into these script fragments. The
-# personal site intentionally owns the upstream metrics fetch; this repo reads
-# the already-rendered snapshot instead of duplicating its backend contract.
-NEXT_PAYLOAD_PATTERN = re.compile(
-    r'self\.__next_f\.push\(\[1,("(?:\\.|[^"\\])*")\]\)</script>',
-    re.DOTALL,
 )
 
 # value ids on one line -> the dots tspan that absorbs their length changes
@@ -116,66 +115,42 @@ def graphql(query, variables, token, label):
     raise RuntimeError(f"GitHub GraphQL {label} unavailable: HTTP {status}")
 
 
-def fetch_url(url):
+def fetch_json_url(url):
     req = urllib.request.Request(url)
-    req.add_header("Accept", "text/html,application/xhtml+xml")
+    req.add_header("Accept", "application/json")
     req.add_header("Cache-Control", "no-cache")
     req.add_header("User-Agent", "kayahickindev-profile-updater/1.0")
     with urllib.request.urlopen(req, timeout=30) as resp:
         if resp.status != 200:
-            raise RuntimeError(f"personal site returned HTTP {resp.status}")
-        return resp.read().decode("utf-8")
-
-
-def extract_site_snapshot(page_html):
-    """Extract the MarketingMetricsSnapshot rendered into the Next.js page."""
-    chunks = []
-    for match in NEXT_PAYLOAD_PATTERN.finditer(page_html):
+            raise RuntimeError(f"profile metrics endpoint returned HTTP {resp.status}")
         try:
-            chunks.append(json.loads(match.group(1)))
-        except json.JSONDecodeError:
-            continue
-    payload = "".join(chunks)
-    decoder = json.JSONDecoder()
-    cursor = 0
-    while True:
-        cursor = payload.find('"metrics":', cursor)
-        if cursor < 0:
-            break
-        start = cursor + len('"metrics":')
-        try:
-            candidate, _ = decoder.raw_decode(payload[start:])
-        except json.JSONDecodeError:
-            cursor = start
-            continue
-        if (
-            isinstance(candidate, dict)
-            and isinstance(candidate.get("generatedAt"), str)
-            and isinstance(candidate.get("metrics"), dict)
-        ):
-            return candidate
-        cursor = start
-    raise RuntimeError("fresh metrics snapshot not found in personal-site HTML")
+            return json.loads(resp.read())
+        except json.JSONDecodeError as exc:
+            raise RuntimeError("profile metrics endpoint returned invalid JSON") from exc
 
 
 def compact_thousands(value):
     return f"{round(value / 1000):,}K+"
 
 
-def fetch_site_stats(url=SITE_URL, now=None):
-    snapshot = extract_site_snapshot(fetch_url(url))
-    generated_at = snapshot["generatedAt"]
+def fetch_site_stats(url=METRICS_URL, now=None):
+    snapshot = fetch_json_url(url)
+    if not isinstance(snapshot, dict) or not isinstance(snapshot.get("metrics"), dict):
+        raise RuntimeError("profile metrics endpoint returned an invalid snapshot")
+    generated_at = snapshot.get("generatedAt")
+    if not isinstance(generated_at, str):
+        raise RuntimeError("profile metrics endpoint omitted generatedAt")
     if generated_at == "fallback":
-        raise RuntimeError("personal site rendered its fallback metrics")
+        raise RuntimeError("profile metrics endpoint returned fallback metrics")
     try:
         generated = datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
     except ValueError as exc:
-        raise RuntimeError(f"invalid personal-site generatedAt: {generated_at}") from exc
+        raise RuntimeError(f"invalid profile metrics generatedAt: {generated_at}") from exc
     now = now or datetime.now(timezone.utc)
     age = now - generated.astimezone(timezone.utc)
     if age < timedelta(minutes=-5) or age > timedelta(hours=SITE_MAX_AGE_HOURS):
         raise RuntimeError(
-            f"personal-site metrics are not fresh: generatedAt={generated_at}, age={age}"
+            f"profile metrics are not fresh: generatedAt={generated_at}, age={age}"
         )
 
     metrics = snapshot["metrics"]
@@ -184,7 +159,7 @@ def fetch_site_stats(url=SITE_URL, now=None):
         metric = metrics.get(name)
         value = metric.get("raw") if isinstance(metric, dict) else None
         if isinstance(value, bool) or not isinstance(value, (int, float)) or value <= 0:
-            raise RuntimeError(f"invalid personal-site metric {name}: {metric!r}")
+            raise RuntimeError(f"invalid profile metric {name}: {metric!r}")
         return value
 
     for name in REQUIRED_SITE_METRICS:
@@ -198,8 +173,58 @@ def fetch_site_stats(url=SITE_URL, now=None):
         "rating_data": f'{raw("appStoreRating"):.1f}',
         "reviews_data": f'{round(raw("appStoreReviews")):,}',
     }
-    print(f"personal-site metrics: generatedAt={generated_at}")
-    return values
+    print(f"profile metrics: generatedAt={generated_at}")
+    return values, generated_at
+
+
+def load_loc_cache(path):
+    if not path or not os.path.exists(path):
+        return {}
+    try:
+        with open(path) as cache_file:
+            payload = json.load(cache_file)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"ignoring unreadable LOC cache {path}: {exc}")
+        return {}
+    if payload.get("version") != 1 or not isinstance(payload.get("repositories"), dict):
+        print(f"ignoring unsupported LOC cache {path}")
+        return {}
+    return payload["repositories"]
+
+
+def write_json(path, payload):
+    temporary = f"{path}.tmp"
+    with open(temporary, "w") as output:
+        json.dump(payload, output, indent=2, sort_keys=True)
+        output.write("\n")
+    os.replace(temporary, path)
+
+
+def save_loc_cache(path, repositories):
+    if not path:
+        return
+    write_json(path, {
+        "version": 1,
+        "repositories": repositories,
+    })
+
+
+def fetch_repo_head(name, token):
+    owner, repo_name = name.split("/", 1)
+    data = graphql("""
+      query($owner: String!, $name: String!) {
+        repository(owner: $owner, name: $name) {
+          defaultBranchRef {
+            target { ... on Commit { oid } }
+          }
+        }
+      }""", {"owner": owner, "name": repo_name}, token, f"default branch for {name}")
+    repository = data.get("repository")
+    default_ref = repository.get("defaultBranchRef") if repository else None
+    if not default_ref:
+        return None
+    oid = default_ref.get("target", {}).get("oid")
+    return oid if isinstance(oid, str) and oid else None
 
 
 def fetch_repo_loc(name, author_id, token):
@@ -253,7 +278,31 @@ def fetch_repo_loc(name, author_id, token):
     return adds, dels
 
 
-def fetch_stats(token):
+def fetch_cached_repo_loc(name, author_id, token, loc_cache):
+    head_oid = fetch_repo_head(name, token)
+    if not head_oid:
+        return None
+    cached = loc_cache.get(name)
+    if (
+        isinstance(cached, dict)
+        and cached.get("headOid") == head_oid
+        and isinstance(cached.get("additions"), int)
+        and isinstance(cached.get("deletions"), int)
+    ):
+        repo_adds = cached["additions"]
+        repo_dels = cached["deletions"]
+        print(f"LOC cache hit: {name}@{head_oid[:12]}")
+    else:
+        repo_adds, repo_dels = fetch_repo_loc(name, author_id, token)
+        print(f"LOC cache refreshed: {name}@{head_oid[:12]}")
+    return repo_adds, repo_dels, {
+        "headOid": head_oid,
+        "additions": repo_adds,
+        "deletions": repo_dels,
+    }
+
+
+def fetch_stats(token, loc_cache_path=None):
     _, user = gh("/user", token)
     followers = user["followers"]
 
@@ -299,15 +348,24 @@ def fetch_stats(token):
         [r["full_name"] for r in owned]
         + [n["nameWithOwner"] for n in contributed["nodes"]]
     ))
+    loc_cache = load_loc_cache(loc_cache_path)
+    refreshed_cache = {}
     adds = dels = 0
     for name in names:
         _, languages = gh(f"/repos/{name}/languages", token)
         if not languages:
             print(f"skipping {name}: no GitHub-detected source languages")
             continue
-        repo_adds, repo_dels = fetch_repo_loc(name, author_id, token)
+        repo_loc = fetch_cached_repo_loc(name, author_id, token, loc_cache)
+        if not repo_loc:
+            print(f"skipping {name}: no default-branch commit")
+            continue
+        repo_adds, repo_dels, cache_entry = repo_loc
+        refreshed_cache[name] = cache_entry
         adds += repo_adds
         dels += repo_dels
+
+    save_loc_cache(loc_cache_path, refreshed_cache)
 
     values = {
         "repo_data": f"{len(owned)}",
@@ -351,12 +409,40 @@ def update_svg(path, values):
         f.write(svg)
 
 
+def refreshed_today(path=REFRESH_STATE_PATH, today=None):
+    today = today or datetime.now(timezone.utc).date()
+    try:
+        with open(path) as state_file:
+            state = json.load(state_file)
+    except (OSError, json.JSONDecodeError):
+        return False
+    return state.get("refreshedOn") == today.isoformat()
+
+
+def save_refresh_state(metrics_generated_at, path=REFRESH_STATE_PATH):
+    now = datetime.now(timezone.utc)
+    write_json(path, {
+        "metricsGeneratedAt": metrics_generated_at,
+        "refreshedAt": now.isoformat().replace("+00:00", "Z"),
+        "refreshedOn": now.date().isoformat(),
+        "trigger": os.environ.get("REFRESH_TRIGGER", "local"),
+    })
+
+
 def main():
+    if (
+        os.environ.get("SKIP_IF_REFRESHED_TODAY", "").lower() == "true"
+        and refreshed_today()
+    ):
+        print("combined website/profile refresh already completed today; skipping fallback")
+        return 0
+
     values = {"age_data": uptime_string()}
-    values.update(fetch_site_stats())
+    site_values, metrics_generated_at = fetch_site_stats()
+    values.update(site_values)
     token = os.environ.get("ACCESS_TOKEN")
     if token:
-        stats = fetch_stats(token)
+        stats = fetch_stats(token, LOC_CACHE_PATH)
         if stats:
             values.update(stats)
     elif os.environ.get("REQUIRE_GITHUB_STATS") == "1":
@@ -365,7 +451,10 @@ def main():
         print("no ACCESS_TOKEN; keeping the last committed GitHub-only values")
     for path in SVGS:
         update_svg(path, values)
+    if os.environ.get("WRITE_REFRESH_STATE") == "1":
+        save_refresh_state(metrics_generated_at)
     print("updated:", ", ".join(f"{k}={v}" for k, v in sorted(values.items())))
+    return 0
 
 
 if __name__ == "__main__":
