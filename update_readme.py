@@ -14,6 +14,7 @@ import os
 import re
 import sys
 import time
+import urllib.error
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
 
@@ -80,10 +81,39 @@ def gh(path, token, method="GET", body=None):
     if body is not None:
         req.data = json.dumps(body).encode()
         req.add_header("Content-Type", "application/json")
-    with urllib.request.urlopen(req) as resp:
-        status = resp.status
-        data = resp.read()
+    try:
+        with urllib.request.urlopen(req) as resp:
+            status = resp.status
+            data = resp.read()
+    except urllib.error.HTTPError as exc:
+        if exc.code not in (500, 502, 503, 504):
+            raise
+        status = exc.code
+        data = exc.read()
     return status, (json.loads(data) if data else None)
+
+
+def graphql(query, variables, token, label):
+    for attempt in range(4):
+        status, payload = gh(
+            "/graphql",
+            token,
+            method="POST",
+            body={"query": query, "variables": variables},
+        )
+        if status == 200 and isinstance(payload, dict):
+            if payload.get("errors"):
+                raise RuntimeError(f"GitHub GraphQL error for {label}: {payload['errors']}")
+            data = payload.get("data")
+            if isinstance(data, dict):
+                return data
+        if attempt < 3:
+            print(
+                f"GitHub GraphQL {label} returned HTTP {status}; "
+                f"retry {attempt + 2}/4"
+            )
+            time.sleep(3 + attempt * 3)
+    raise RuntimeError(f"GitHub GraphQL {label} unavailable: HTTP {status}")
 
 
 def fetch_url(url):
@@ -172,6 +202,57 @@ def fetch_site_stats(url=SITE_URL, now=None):
     return values
 
 
+def fetch_repo_loc(name, author_id, token):
+    """Sum non-merge commits by this user on a repo's default branch."""
+    owner, repo_name = name.split("/", 1)
+    adds = dels = 0
+    cursor = None
+    while True:
+        data = graphql("""
+          query($owner: String!, $name: String!, $author: ID!, $cursor: String) {
+            repository(owner: $owner, name: $name) {
+              defaultBranchRef {
+                target {
+                  ... on Commit {
+                    history(first: 100, after: $cursor, author: {id: $author}) {
+                      nodes {
+                        additions
+                        deletions
+                        parents(first: 2) { totalCount }
+                      }
+                      pageInfo { hasNextPage endCursor }
+                    }
+                  }
+                }
+              }
+            }
+          }""", {
+            "owner": owner,
+            "name": repo_name,
+            "author": author_id,
+            "cursor": cursor,
+        }, token, f"commit history for {name}")
+        repository = data.get("repository")
+        default_ref = repository.get("defaultBranchRef") if repository else None
+        if not default_ref:
+            return adds, dels
+        history = default_ref.get("target", {}).get("history")
+        if not isinstance(history, dict):
+            raise RuntimeError(f"default branch is not a commit history for {name}")
+        for commit in history["nodes"]:
+            if commit["parents"]["totalCount"] > 1:
+                # The branch commits are already reachable from the default
+                # branch; counting the merge diff would duplicate their LOC.
+                continue
+            adds += commit["additions"]
+            dels += commit["deletions"]
+        page_info = history["pageInfo"]
+        if not page_info["hasNextPage"]:
+            break
+        cursor = page_info["endCursor"]
+    return adds, dels
+
+
 def fetch_stats(token):
     _, user = gh("/user", token)
     followers = user["followers"]
@@ -188,9 +269,10 @@ def fetch_stats(token):
     _, pr_search = gh(f"/search/issues?q=type:pr+author:{LOGIN}+is:merged&per_page=1", token)
     prs_merged = pr_search["total_count"]
 
-    _, gql = gh("/graphql", token, method="POST", body={"query": """
+    data = graphql("""
       query($login: String!) {
         user(login: $login) {
+          id
           contributionsCollection {
             startedAt
             endedAt
@@ -202,17 +284,16 @@ def fetch_stats(token):
             nodes { nameWithOwner }
           }
         }
-      }""", "variables": {"login": LOGIN}})
-    if gql.get("errors"):
-        raise RuntimeError(f"GitHub GraphQL error: {gql['errors']}")
-    collection = gql["data"]["user"]["contributionsCollection"]
+      }""", {"login": LOGIN}, token, "profile summary")
+    collection = data["user"]["contributionsCollection"]
+    author_id = data["user"]["id"]
     contribution_total = collection["contributionCalendar"]["totalContributions"]
     print(
         "GitHub contribution calendar: "
         f"{collection['startedAt']} to {collection['endedAt']} = "
         f"{contribution_total:,}"
     )
-    contributed = gql["data"]["viewer"]["repositoriesContributedTo"]
+    contributed = data["viewer"]["repositoriesContributedTo"]
 
     names = list(dict.fromkeys(
         [r["full_name"] for r in owned]
@@ -224,22 +305,9 @@ def fetch_stats(token):
         if not languages:
             print(f"skipping {name}: no GitHub-detected source languages")
             continue
-        contributors = None
-        for attempt in range(8):
-            status, data = gh(f"/repos/{name}/stats/contributors", token)
-            if status == 200 and isinstance(data, list):
-                contributors = data
-                break
-            time.sleep(5 + attempt * 3)  # 202: stats cache still generating
-        if contributors is None:
-            # Never publish a partial LOC total. A failed workflow is visible;
-            # a plausible-looking stale or understated number is not.
-            raise RuntimeError(f"contributor stats unavailable for {name}")
-        for c in contributors:
-            if (c.get("author") or {}).get("login") == LOGIN:
-                for w in c["weeks"]:
-                    adds += w["a"]
-                    dels += w["d"]
+        repo_adds, repo_dels = fetch_repo_loc(name, author_id, token)
+        adds += repo_adds
+        dels += repo_dels
 
     values = {
         "repo_data": f"{len(owned)}",
