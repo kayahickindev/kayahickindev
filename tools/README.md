@@ -29,5 +29,7 @@ that alignment. `update_readme.py` rewrites the dynamic tspan values by id each
 night. Product traction is read from the fresh snapshot rendered by
 `kayahickin.com`; GitHub activity and LOC are refreshed with an authenticated
 GitHub token. The update fails instead of publishing fallback site data or a
-partial LOC total. If a stat is renamed, update `LINE_GROUPS` and keep its
-sibling `*_dots` tspan.
+partial LOC total. LOC is summed from the authenticated user's non-merge commit
+history on each code repository's default branch, avoiding GitHub's delayed
+aggregate contributor-stat cache. If a stat is renamed, update `LINE_GROUPS`
+and keep its sibling `*_dots` tspan.

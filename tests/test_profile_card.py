@@ -1,6 +1,8 @@
+import io
 import json
 import tempfile
 import unittest
+import urllib.error
 import xml.etree.ElementTree as ET
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -13,6 +15,20 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ProfileCardTests(unittest.TestCase):
+    def test_github_server_error_is_returned_for_bounded_retry(self):
+        error = urllib.error.HTTPError(
+            "https://api.github.com/test",
+            500,
+            "Internal Server Error",
+            {},
+            io.BytesIO(b'{"message":"try again"}'),
+        )
+        with mock.patch.object(update_readme.urllib.request, "urlopen", side_effect=error):
+            status, body = update_readme.gh("/test", "secret")
+
+        self.assertEqual(status, 500)
+        self.assertEqual(body, {"message": "try again"})
+
     def test_generated_svgs_have_expected_dynamic_fields(self):
         for name in ("dark_mode.svg", "light_mode.svg"):
             path = ROOT / name
@@ -105,9 +121,34 @@ class ProfileCardTests(unittest.TestCase):
                 return 200, {"Python": 100}
             if path == "/graphql":
                 graphql_queries.append(body["query"])
+                if "history(" in body["query"]:
+                    return 200, {
+                        "data": {
+                            "repository": {
+                                "defaultBranchRef": {
+                                    "target": {
+                                        "history": {
+                                            "nodes": [
+                                                {
+                                                    "additions": 20,
+                                                    "deletions": 5,
+                                                    "parents": {"totalCount": 1},
+                                                }
+                                            ],
+                                            "pageInfo": {
+                                                "hasNextPage": False,
+                                                "endCursor": None,
+                                            },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 return 200, {
                     "data": {
                         "user": {
+                            "id": "U_1",
                             "contributionsCollection": {
                                 "startedAt": "2025-07-06T07:00:00Z",
                                 "endedAt": "2026-07-11T06:59:59Z",
@@ -121,13 +162,6 @@ class ProfileCardTests(unittest.TestCase):
                         },
                     }
                 }
-            if path == "/repos/kayahickindev/profile/stats/contributors":
-                return 200, [
-                    {
-                        "author": {"login": "kayahickindev"},
-                        "weeks": [{"a": 20, "d": 5}],
-                    }
-                ]
             raise AssertionError(path)
 
         with mock.patch.object(update_readme, "gh", side_effect=fake_gh):
@@ -155,9 +189,12 @@ class ProfileCardTests(unittest.TestCase):
             if path.startswith("/search/issues"):
                 return 200, {"total_count": 591}
             if path == "/graphql":
+                if "history(" in body["query"]:
+                    return 200, {"errors": [{"message": "history unavailable"}]}
                 return 200, {
                     "data": {
                         "user": {
+                            "id": "U_1",
                             "contributionsCollection": {
                                 "startedAt": "start",
                                 "endedAt": "end",
@@ -173,15 +210,10 @@ class ProfileCardTests(unittest.TestCase):
                 }
             if path.endswith("/languages"):
                 return 200, {"Python": 100}
-            if path.endswith("/stats/contributors"):
-                return 202, {}
             raise AssertionError(path)
 
-        with (
-            mock.patch.object(update_readme, "gh", side_effect=fake_gh),
-            mock.patch.object(update_readme.time, "sleep"),
-        ):
-            with self.assertRaisesRegex(RuntimeError, "contributor stats unavailable"):
+        with mock.patch.object(update_readme, "gh", side_effect=fake_gh):
+            with self.assertRaisesRegex(RuntimeError, "GraphQL error"):
                 update_readme.fetch_stats("secret")
 
     def test_repository_without_source_languages_is_excluded_from_loc(self):
@@ -196,9 +228,34 @@ class ProfileCardTests(unittest.TestCase):
             if path.startswith("/search/issues"):
                 return 200, {"total_count": 591}
             if path == "/graphql":
+                if "history(" in body["query"]:
+                    return 200, {
+                        "data": {
+                            "repository": {
+                                "defaultBranchRef": {
+                                    "target": {
+                                        "history": {
+                                            "nodes": [
+                                                {
+                                                    "additions": 20,
+                                                    "deletions": 5,
+                                                    "parents": {"totalCount": 1},
+                                                }
+                                            ],
+                                            "pageInfo": {
+                                                "hasNextPage": False,
+                                                "endCursor": None,
+                                            },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 return 200, {
                     "data": {
                         "user": {
+                            "id": "U_1",
                             "contributionsCollection": {
                                 "startedAt": "start",
                                 "endedAt": "end",
@@ -212,19 +269,77 @@ class ProfileCardTests(unittest.TestCase):
                 return 200, {"Python": 100}
             if path == "/repos/kayahickindev/calendar-fixture/languages":
                 return 200, {}
-            if path == "/repos/kayahickindev/profile/stats/contributors":
-                return 200, [
-                    {
-                        "author": {"login": "kayahickindev"},
-                        "weeks": [{"a": 20, "d": 5}],
-                    }
-                ]
             raise AssertionError(path)
 
         with mock.patch.object(update_readme, "gh", side_effect=fake_gh):
             values = update_readme.fetch_stats("secret")
 
         self.assertEqual(values["loc_data"], "15")
+
+    def test_graphql_loc_paginates_and_skips_merge_commits(self):
+        def fake_gh(path, _token, method="GET", body=None):
+            if path != "/graphql":
+                raise AssertionError(path)
+            if body["variables"]["cursor"] is None:
+                return 200, {
+                    "data": {
+                        "repository": {
+                            "defaultBranchRef": {
+                                "target": {
+                                    "history": {
+                                        "nodes": [
+                                            {
+                                                "additions": 20,
+                                                "deletions": 5,
+                                                "parents": {"totalCount": 1},
+                                            },
+                                            {
+                                                "additions": 100,
+                                                "deletions": 100,
+                                                "parents": {"totalCount": 2},
+                                            },
+                                        ],
+                                        "pageInfo": {
+                                            "hasNextPage": True,
+                                            "endCursor": "next",
+                                        },
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            return 200, {
+                "data": {
+                    "repository": {
+                        "defaultBranchRef": {
+                            "target": {
+                                "history": {
+                                    "nodes": [
+                                        {
+                                            "additions": 8,
+                                            "deletions": 3,
+                                            "parents": {"totalCount": 1},
+                                        }
+                                    ],
+                                    "pageInfo": {
+                                        "hasNextPage": False,
+                                        "endCursor": None,
+                                    },
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        with mock.patch.object(update_readme, "gh", side_effect=fake_gh):
+            additions, deletions = update_readme.fetch_repo_loc(
+                "kayahickindev/kayahickindev", "U_1", "secret"
+            )
+
+        self.assertEqual(additions, 28)
+        self.assertEqual(deletions, 8)
 
     def test_svg_value_update_preserves_line_width(self):
         source = ROOT / "dark_mode.svg"
