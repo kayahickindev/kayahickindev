@@ -1,0 +1,75 @@
+{
+  "repositories": {
+    "MyFutureSelf/MyFutureSelf": {
+      "additions": 821334,
+      "deletions": 466094,
+      "headOid": "7063bb54bf2b64606e089ea6007de218a8f30212"
+    },
+    "MyFutureSelf/candidate-skills-assessment": {
+      "additions": 363284,
+      "deletions": 2,
+      "headOid": "2ddbd117cb31a4fc6fd5bb25003fa85e5aba40c6"
+    },
+    "MyFutureSelf/myfutureself-android": {
+      "additions": 213113,
+      "deletions": 19138,
+      "headOid": "3020b7f220f2aa071f7a8618c82bd3966f788eb8"
+    },
+    "MyFutureSelf/myfutureself-website": {
+      "additions": 17098,
+      "deletions": 2740,
+      "headOid": "93e64051fb6ccdfc62c4446bc86a442978bb0f37"
+    },
+    "kayahickindev/ai-conversation-judge": {
+      "additions": 3413,
+      "deletions": 8,
+      "headOid": "6fc2277d76db35d5057a95d7cc088313b0e8c696"
+    },
+    "kayahickindev/app-store-review-digest": {
+      "additions": 3690,
+      "deletions": 0,
+      "headOid": "e311f231f9c974358b8124cb1185184b5f8361a9"
+    },
+    "kayahickindev/kaya-site": {
+      "additions": 19165,
+      "deletions": 7813,
+      "headOid": "d3b4fc47d168914d83d13abd6ec0b2008fef643c"
+    },
+    "kayahickindev/kayahickindev": {
+      "additions": 1856,
+      "deletions": 469,
+      "headOid": "951d3865a02db9711717c8cfc5e56b0012bc3574"
+    },
+    "kayahickindev/mfs-miamiuniversity": {
+      "additions": 387054,
+      "deletions": 92289,
+      "headOid": "57f0cfbfc67a301140377c725ab98754e2c008fc"
+    },
+    "kayahickindev/myfutureself-raise-crm": {
+      "additions": 8552,
+      "deletions": 11,
+      "headOid": "d5cbde8ce6c8133e1d7b742f56462d0a7224e3d1"
+    },
+    "kayahickindev/success-ai": {
+      "additions": 269365,
+      "deletions": 0,
+      "headOid": "821d5cffb0aa2fed97b66aad10e824f959f7b918"
+    },
+    "kayahickindev/success-ai2": {
+      "additions": 33353,
+      "deletions": 20856,
+      "headOid": "afdb2aa509b61505fa6575c215f98c3bd05e4e8c"
+    },
+    "kayahickindev/successaimvp": {
+      "additions": 40493,
+      "deletions": 19167,
+      "headOid": "b8d44a1f395bc16642567fdd2299dd292c275410"
+    },
+    "kayahickindev/viral-loop-dashboard": {
+      "additions": 55819,
+      "deletions": 13139,
+      "headOid": "edd9ee162679fe4c1e9950730d833b85ff18733b"
+    }
+  },
+  "version": 1
+}

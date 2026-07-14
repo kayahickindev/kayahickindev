@@ -1,8 +1,11 @@
 name: Update profile stats
 
 on:
+  repository_dispatch:
+    types: [profile-metrics-updated]
   schedule:
-    - cron: "23 5 * * *"
+    # Late fallback: the kaya-site workflow normally dispatches this at 06:30 UTC.
+    - cron: "40 23 * * *"
   workflow_dispatch:
 
 permissions:
@@ -25,12 +28,15 @@ jobs:
         env:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           REQUIRE_GITHUB_STATS: "1"
-          PROFILE_SITE_URL: https://www.kayahickin.com
+          PROFILE_METRICS_URL: https://kayahickin.com/api/profile-metrics
           PROFILE_SITE_MAX_AGE_HOURS: "48"
+          REFRESH_TRIGGER: ${{ github.event_name }}
+          SKIP_IF_REFRESHED_TODAY: ${{ github.event_name == 'schedule' }}
+          WRITE_REFRESH_STATE: "1"
         run: python update_readme.py
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dark_mode.svg light_mode.svg
+          git add dark_mode.svg light_mode.svg loc_cache.json profile_refresh_state.json
           git diff --cached --quiet || (git commit -m "chore: refresh profile stats" && git push)
