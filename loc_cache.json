@@ -1,24 +1,39 @@
 {
   "repositories": {
     "MyFutureSelf/MyFutureSelf": {
-      "additions": 821334,
-      "deletions": 466094,
-      "headOid": "7063bb54bf2b64606e089ea6007de218a8f30212"
+      "additions": 843397,
+      "deletions": 466992,
+      "headOid": "13239a32758bfce25bf8b1e1adf2d4fd90794767"
     },
     "MyFutureSelf/candidate-skills-assessment": {
       "additions": 363284,
       "deletions": 2,
       "headOid": "2ddbd117cb31a4fc6fd5bb25003fa85e5aba40c6"
     },
+    "MyFutureSelf/mfs-miamiuniversity": {
+      "additions": 412695,
+      "deletions": 107343,
+      "headOid": "e77f9ffc8e706d4aeabe294ca792fb7fc6288dc3"
+    },
     "MyFutureSelf/myfutureself-android": {
-      "additions": 213113,
-      "deletions": 19138,
-      "headOid": "3020b7f220f2aa071f7a8618c82bd3966f788eb8"
+      "additions": 213856,
+      "deletions": 19289,
+      "headOid": "6ab1478f9e47be940d3ddf215fbc60bbf587130f"
+    },
+    "MyFutureSelf/myfutureself-raise-crm": {
+      "additions": 8566,
+      "deletions": 17,
+      "headOid": "7567be3796a2f3fa904c077579cbdadb948bb0d6"
     },
     "MyFutureSelf/myfutureself-website": {
       "additions": 17098,
       "deletions": 2740,
       "headOid": "93e64051fb6ccdfc62c4446bc86a442978bb0f37"
+    },
+    "MyFutureSelf/viral-loop-dashboard": {
+      "additions": 55819,
+      "deletions": 25325,
+      "headOid": "71aaf9a46c48a989b8332d7c4d59bd0d3ade176c"
     },
     "kayahickindev/ai-conversation-judge": {
       "additions": 3413,
@@ -38,17 +53,12 @@
     "kayahickindev/kayahickindev": {
       "additions": 2168,
       "deletions": 545,
-      "headOid": "0de1a88b7ef3b387b03d7818cf0a98b03489f933"
+      "headOid": "a39f2350210bf691ddedf019e2d4e0e28460e367"
     },
-    "kayahickindev/mfs-miamiuniversity": {
-      "additions": 387054,
-      "deletions": 92289,
-      "headOid": "57f0cfbfc67a301140377c725ab98754e2c008fc"
-    },
-    "kayahickindev/myfutureself-raise-crm": {
-      "additions": 8552,
-      "deletions": 11,
-      "headOid": "d5cbde8ce6c8133e1d7b742f56462d0a7224e3d1"
+    "kayahickindev/sigma-chi-public-directory": {
+      "additions": 1246,
+      "deletions": 0,
+      "headOid": "6ca4fbef840c89607dbc1891f3967933f2aef491"
     },
     "kayahickindev/success-ai": {
       "additions": 269365,
@@ -64,11 +74,6 @@
       "additions": 40493,
       "deletions": 19167,
       "headOid": "b8d44a1f395bc16642567fdd2299dd292c275410"
-    },
-    "kayahickindev/viral-loop-dashboard": {
-      "additions": 55819,
-      "deletions": 13139,
-      "headOid": "edd9ee162679fe4c1e9950730d833b85ff18733b"
     }
   },
   "version": 1
