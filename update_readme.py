@@ -32,14 +32,13 @@ REFRESH_STATE_PATH = os.environ.get(
     "PROFILE_REFRESH_STATE_PATH", "profile_refresh_state.json"
 )
 
-REQUIRED_SITE_METRICS = (
+REQUIRED_RAW_SITE_METRICS = (
     "appDownloads",
     "appStoreRating",
     "appStoreReviews",
     "futureSelfActions",
-    "paidSubscribersEver",
-    "arr",
 )
+REQUIRED_DISPLAY_SITE_METRICS = ("paidSubscribersEver", "arr")
 
 # value ids on one line -> the dots tspan that absorbs their length changes
 LINE_GROUPS = [
@@ -162,13 +161,22 @@ def fetch_site_stats(url=METRICS_URL, now=None):
             raise RuntimeError(f"invalid profile metric {name}: {metric!r}")
         return value
 
-    for name in REQUIRED_SITE_METRICS:
+    def display(name):
+        metric = metrics.get(name)
+        value = metric.get("display") if isinstance(metric, dict) else None
+        if not isinstance(value, str) or not value.strip():
+            raise RuntimeError(f"invalid profile metric {name}: {metric!r}")
+        return value
+
+    for name in REQUIRED_RAW_SITE_METRICS:
         raw(name)
+    for name in REQUIRED_DISPLAY_SITE_METRICS:
+        display(name)
 
     values = {
         "downloads_data": compact_thousands(raw("appDownloads")),
-        "paid_data": f'{round(raw("paidSubscribersEver")):,}+',
-        "arr_data": f'${compact_thousands(raw("arr"))}',
+        "paid_data": display("paidSubscribersEver"),
+        "arr_data": display("arr"),
         "actions_data": compact_thousands(raw("futureSelfActions")),
         "rating_data": f'{raw("appStoreRating"):.1f}',
         "reviews_data": f'{round(raw("appStoreReviews")):,}',

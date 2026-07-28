@@ -59,8 +59,11 @@ class ProfileCardTests(unittest.TestCase):
                 "appStoreReviews": {"raw": 973},
                 "futureSelfActions": {"raw": 163363},
                 "coachingValueDelivered": {"raw": 10618595},
-                "paidSubscribersEver": {"raw": 2737},
-                "arr": {"raw": 113032},
+                "paidSubscribersEver": {
+                    "display": "2.7K+",
+                    "label": "Active Paid Subscribers",
+                },
+                "arr": {"display": "$113K+", "label": "ARR"},
             },
         }
 
@@ -73,7 +76,7 @@ class ProfileCardTests(unittest.TestCase):
 
         self.assertEqual(generated_at, "2026-07-14T04:15:41.262Z")
         self.assertEqual(values["downloads_data"], "30K+")
-        self.assertEqual(values["paid_data"], "2,737+")
+        self.assertEqual(values["paid_data"], "2.7K+")
         self.assertEqual(values["arr_data"], "$113K+")
         self.assertEqual(values["actions_data"], "163K+")
         self.assertEqual(values["rating_data"], "4.7")
@@ -86,6 +89,18 @@ class ProfileCardTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(RuntimeError, "not fresh"):
                 update_readme.fetch_site_stats(now=now)
+
+    def test_sensitive_profile_metrics_require_public_display_values(self):
+        snapshot = self.site_snapshot()
+        del snapshot["metrics"]["arr"]["display"]
+
+        with mock.patch.object(
+            update_readme, "fetch_json_url", return_value=snapshot
+        ):
+            with self.assertRaisesRegex(RuntimeError, "invalid profile metric arr"):
+                update_readme.fetch_site_stats(
+                    now=datetime(2026, 7, 14, 12, tzinfo=timezone.utc)
+                )
 
     def test_portrait_source_fits_the_left_panel(self):
         lines = (ROOT / "tools" / "ascii_art_C.txt").read_text(
