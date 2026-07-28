@@ -63,7 +63,7 @@ class ProfileCardTests(unittest.TestCase):
                     "display": "2.7K+",
                     "label": "Active Paid Subscribers",
                 },
-                "arr": {"display": "$113K+", "label": "ARR"},
+                "arr": {"display": "$113K+", "label": "Annual Run Rate"},
             },
         }
 

@@ -157,7 +157,7 @@ rows = [
     header("- MyFutureSelf"),
     line_kv2("Downloads", STATS["downloads"], "downloads_data",
              "Paid Subs", STATS["paid"], "paid_data"),
-    line_kv2("ARR", STATS["arr"], "arr_data",
+    line_kv2("Annual Run Rate", STATS["arr"], "arr_data",
              "Actions", STATS["actions"], "actions_data"),
     line_kv2("Rating", STATS["rating"], "rating_data",
              "Reviews", STATS["reviews"], "reviews_data"),
