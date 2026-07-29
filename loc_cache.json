@@ -1,9 +1,9 @@
 {
   "repositories": {
     "MyFutureSelf/MyFutureSelf": {
-      "additions": 1191415,
-      "deletions": 498203,
-      "headOid": "10535129af79bd4237b462505c6c26860d8645a8"
+      "additions": 1193965,
+      "deletions": 498696,
+      "headOid": "3f13e5cdc25ec0a981fea126f790ab694abf7608"
     },
     "MyFutureSelf/candidate-skills-assessment": {
       "additions": 363284,
@@ -13,7 +13,7 @@
     "MyFutureSelf/mfs-miamiuniversity": {
       "additions": 547281,
       "deletions": 120793,
-      "headOid": "aa2c2c5225af4fa00dace077b972eed447706b04"
+      "headOid": "09f2da0fac37035b6f8cba05dc4ac2534637c35c"
     },
     "MyFutureSelf/myfutureself-android": {
       "additions": 275518,
@@ -53,7 +53,7 @@
     "kayahickindev/kayahickindev": {
       "additions": 2204,
       "deletions": 558,
-      "headOid": "3622ef88308a34b6a3e0a295e066a07b0a031c75"
+      "headOid": "d3a2e884d045149232c03a847d786d4a87b9db77"
     },
     "kayahickindev/sigma-chi-public-directory": {
       "additions": 1246,
