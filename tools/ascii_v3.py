@@ -1,4 +1,4 @@
-"""Generate the profile's ASCII portrait from the committed GitHub avatar.
+"""Generate the profile's ASCII portrait from the committed headshot.
 
 Glyph ink is halftone density, so it has to follow whichever direction reads
 as "more ink" on the panel behind it. On the dark card, light glyphs mean ink
@@ -36,9 +36,9 @@ RAMP: tuple[tuple[str, float], ...] = (
     ("*", 0.75),
     ("o", 1.00),
 )
-#: Below these, a cell is flat panel rather than something worth a glyph.
+#: Below this, a luminance step is sensor grain rather than a feature, and
+#: diffusing it dithers the flat jacket into a field of speckle.
 EDGE_FLOOR = 0.16
-INK_FLOOR = 0.07
 
 RAMP_CHARS = np.array([glyph for glyph, _ in RAMP])
 RAMP_INK = np.array([ink for _, ink in RAMP])
@@ -64,9 +64,10 @@ class Tone:
 
 @dataclass(frozen=True)
 class Preset:
-    #: Which backdrop the source photo has, and therefore how to cut it out.
-    backdrop: str
     source: str
+    #: Framing is measured on the head, not the body: the shoulders run off the
+    #: right of the source frame, so centring on the subject's bounding box
+    #: would sit the face left of centre.
     center_x: int
     top: int
     height: int
@@ -74,8 +75,16 @@ class Preset:
     base_gain: float
     #: Local-detail gain; above 1.0 is what makes eyes, brows and lapels read.
     detail_gain: float
-    #: Extra ink along luminance edges, which is what draws the silhouette.
+    #: Extra ink along luminance edges, which picks out interior features.
     edge_gain: float
+    #: Extra ink along the cutout boundary. Luminance edges alone cannot draw
+    #: this head: the hair is wispy and backlit, so its contour comes out as
+    #: broken scatter. The cutout knows exactly where the subject ends.
+    rim_gain: float
+    #: Floor under every cell inside the silhouette. The widest part of the
+    #: head is dark hair, which maps to no ink at all and leaves the figure
+    #: looking like scatter; a floor keeps it reading as one mass.
+    interior_floor: float
     dark: Tone
     light: Tone
 
@@ -84,18 +93,14 @@ DARK_TONE = Tone(35.0, 99.0, 1.05, 0.95)
 LIGHT_TONE = Tone(1.0, 99.0, 1.35, 0.62)
 
 PRESETS = {
-    # Studio headshot: a cut-out subject on white at 1024px, which resolves far
-    # more detail per glyph cell than the 460px GitHub avatar can.
-    "open": Preset("white", "headshot.png", 494, 82, 778,
-                   0.80, 1.50, 0.55, DARK_TONE, LIGHT_TONE),
-    "balanced": Preset("white", "headshot.png", 494, 96, 700,
-                       0.80, 1.50, 0.55, DARK_TONE, LIGHT_TONE),
-    "tight": Preset("white", "headshot.png", 494, 138, 616,
-                    0.80, 1.50, 0.55, DARK_TONE, LIGHT_TONE),
-    # The public GitHub avatar, shot against green foliage. Lower resolution
-    # and a busy backdrop, so it resolves noticeably less of the face.
-    "avatar": Preset("foliage", "avatar.png", 218, 14, 352,
-                     0.80, 1.50, 0.45, Tone(20.0, 99.0, 1.05, 0.95), LIGHT_TONE),
+    # Head top sits at y=58 and the chin near y=570 in the committed 1024px
+    # headshot, so these differ only in how much shoulder they keep.
+    "open": Preset("headshot.png", 500, 10, 940,
+                   0.80, 1.80, 0.28, 0.68, 0.12, DARK_TONE, LIGHT_TONE),
+    "balanced": Preset("headshot.png", 500, 28, 850,
+                       0.80, 1.80, 0.28, 0.68, 0.12, DARK_TONE, LIGHT_TONE),
+    "tight": Preset("headshot.png", 500, 52, 750,
+                    0.80, 1.80, 0.28, 0.68, 0.12, DARK_TONE, LIGHT_TONE),
 }
 
 
@@ -150,33 +155,9 @@ def flood_from_border(candidate: np.ndarray) -> np.ndarray:
 
 
 def white_backdrop_mask(hsv: np.ndarray) -> np.ndarray:
-    """True where a pixel belongs to a cut-out subject on white."""
+    """True where a pixel belongs to the subject rather than the backdrop."""
     saturation, value = hsv[..., 1], hsv[..., 2]
     return ~flood_from_border((saturation <= 30) & (value >= 225))
-
-
-def subject_mask(hsv: np.ndarray, shape: tuple[int, int]) -> np.ndarray:
-    """True where a pixel belongs to the portrait rather than green foliage."""
-    hue, saturation, value = hsv[..., 0], hsv[..., 1], hsv[..., 2]
-    yy, xx = np.indices(shape)
-    x_norm = xx / max(1, shape[1] - 1)
-    y_norm = yy / max(1, shape[0] - 1)
-
-    # The avatar background is green foliage. Preserve the neutral shirt only
-    # in the center/lower subject region, while dropping pale bokeh and cars.
-    green = (hue >= 30) & (hue <= 145) & (saturation > 15)
-    pale_neutral = (saturation <= 48) & (value >= 138)
-    shirt_region = (x_norm >= 0.30) & (x_norm <= 0.72) & (y_norm >= 0.58)
-    background = green | (pale_neutral & ~shirt_region)
-
-    # Remove isolated background at the extreme lower corners so that the
-    # shoulders end in deliberate diagonals rather than stray glyph islands.
-    lower_corner = (y_norm > 0.76) & (
-        (x_norm < 0.10 + (y_norm - 0.76) * 0.45)
-        | (x_norm > 0.94 - (y_norm - 0.76) * 0.18)
-    )
-    background |= lower_corner & green
-    return ~background
 
 
 def local_contrast(gray: np.ndarray, preset: Preset) -> np.ndarray:
@@ -253,10 +234,7 @@ def cell_fields(source: Path, preset: Preset) -> tuple[np.ndarray, np.ndarray, n
     ).astype(np.float64)
 
     gray = np.clip(local_contrast(gray, preset), 0.0, 255.0)
-    if preset.backdrop == "white":
-        subject = white_backdrop_mask(hsv).astype(np.float64)
-    else:
-        subject = subject_mask(hsv, gray.shape).astype(np.float64)
+    subject = white_backdrop_mask(hsv).astype(np.float64)
     blocks = (ROWS, SS, COLS, SS)
     coverage = subject.reshape(blocks).mean(axis=(1, 3))
     weighted = (gray * subject).reshape(blocks).sum(axis=(1, 3))
@@ -293,7 +271,15 @@ def ink_field(
     # but only real boundaries, since sensor grain in the flat navy jacket
     # otherwise dithers into a field of speckle that reads as static.
     ink = np.clip(ink + np.where(edges > EDGE_FLOOR, edges, 0.0) * preset.edge_gain, 0.0, 1.0)
-    ink[ink < INK_FLOOR] = 0.0
+    ink = np.where(drawn, np.maximum(ink, preset.interior_floor), ink)
+    # Cells on the silhouette's own boundary, which is a closed contour even
+    # where the hair dissolves into the backdrop and luminance edges do not.
+    interior = drawn.copy()
+    interior[1:] &= drawn[:-1]
+    interior[:-1] &= drawn[1:]
+    interior[:, 1:] &= drawn[:, :-1]
+    interior[:, :-1] &= drawn[:, 1:]
+    ink = np.where(drawn & ~interior, np.maximum(ink, preset.rim_gain), ink)
     # Partly covered cells sit on the silhouette edge; fade them out so the
     # outline dissolves into the panel instead of ending on a hard step.
     ink *= np.clip((coverage - 0.15) / 0.55, 0.0, 1.0)
