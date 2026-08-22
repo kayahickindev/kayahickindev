@@ -228,7 +228,7 @@ rows = [
              "Reviews", STATS["reviews"], "reviews_data"),
     None,
     header("─ Contact"),
-    line_kv("Email.Work", "successai@myfutureselfapp.com"),
+    line_kv("Email.Work", "kaya@myfutureselfapp.com"),
     line_kv("Website", "kayahickin.com"),
     line_kv("X", "@KayaHickin"),
     None,
