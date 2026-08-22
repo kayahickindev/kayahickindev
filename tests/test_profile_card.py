@@ -1,7 +1,11 @@
 import io
+import json
+import subprocess
+import sys
 import tempfile
 import unittest
 import urllib.error
+import re
 import xml.etree.ElementTree as ET
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -102,13 +106,88 @@ class ProfileCardTests(unittest.TestCase):
                     now=datetime(2026, 7, 14, 12, tzinfo=timezone.utc)
                 )
 
-    def test_portrait_source_fits_the_left_panel(self):
-        lines = (ROOT / "tools" / "ascii_art_C.txt").read_text(
-            encoding="utf-8"
-        ).splitlines()
-        self.assertEqual(len(lines), 25)
-        self.assertLessEqual(max(map(len, lines)), 37)
-        self.assertTrue(any(lines[:4]))
+    def test_portrait_sources_fit_the_left_panel(self):
+        for polarity in ("dark", "light"):
+            lines = (ROOT / "tools" / f"ascii_art_{polarity}.txt").read_text(
+                encoding="utf-8"
+            ).splitlines()
+            self.assertLessEqual(len(lines), 56, polarity)
+            self.assertLessEqual(max(map(len, lines)), 72, polarity)
+            self.assertTrue(any(lines[:6]), polarity)
+
+    def test_each_panel_carries_its_own_portrait_polarity(self):
+        """Ink is halftone density, so it has to follow the panel behind it.
+
+        Shipping one portrait to both panels renders the light card as a
+        photographic negative of the dark one.
+        """
+        dark_art = (ROOT / "tools" / "ascii_art_dark.txt").read_text(encoding="utf-8")
+        light_art = (ROOT / "tools" / "ascii_art_light.txt").read_text(encoding="utf-8")
+        self.assertNotEqual(dark_art.strip(), light_art.strip())
+
+        def art_block(name):
+            svg = (ROOT / name).read_text(encoding="utf-8")
+            return svg[svg.index('class="ascii"') : svg.index("</text>")]
+
+        for name, art in (("dark_mode.svg", dark_art), ("light_mode.svg", light_art)):
+            block = art_block(name)
+            for line in sorted(art.splitlines(), key=len)[-3:]:
+                self.assertIn(line, block, name)
+
+    def test_cards_scale_instead_of_clipping(self):
+        for name in ("dark_mode.svg", "light_mode.svg"):
+            root = ET.parse(ROOT / name).getroot()
+            self.assertEqual(root.attrib.get("viewBox"), "0 0 985 545", name)
+
+    def test_language_bar_segments_fill_the_track(self):
+        totals = json.loads(
+            (ROOT / "language_stats.json").read_text(encoding="utf-8")
+        )
+        self.assertTrue(totals["languages"])
+        for name in ("dark_mode.svg", "light_mode.svg"):
+            svg = (ROOT / name).read_text(encoding="utf-8")
+            self.assertIn('clip-path="url(#barClip)"', svg)
+            group = svg.split('<g clip-path="url(#barClip)">')[1].split("</g>")[0]
+            segments = re.findall(
+                r'<rect x="([\d.]+)" y="462" width="([\d.]+)"', group
+            )
+            self.assertGreaterEqual(len(segments), 2, name)
+            covered = sum(float(width) for _, width in segments)
+            self.assertAlmostEqual(covered, 260.0, delta=0.5, msg=name)
+            self.assertIn(totals["languages"][0]["name"], svg, name)
+
+    def test_widest_readout_line_stays_inside_the_card(self):
+        """The lines-of-code row is the one that outgrows the panel.
+
+        It used to be clamped to a single leader dot and allowed to run two
+        columns long, which pushed the totals off the right edge of the card.
+        """
+        for name in ("dark_mode.svg", "light_mode.svg"):
+            svg = (ROOT / name).read_text(encoding="utf-8")
+            rows = re.findall(r'<tspan x="318" y="(\d+)" class="cc">\. </tspan>', svg)
+            self.assertTrue(rows)
+            for row_y in rows:
+                line = svg.split(f'<tspan x="318" y="{row_y}" class="cc">. </tspan>')[1]
+                line = line.split('<tspan x="318" y=')[0]
+                text = re.sub(r"<[^>]+>", "", line).replace("\n", "")
+                text = (text.replace("&amp;", "&").replace("&lt;", "<")
+                        .replace("&gt;", ">"))
+                self.assertEqual(len(text) + 2, 63, (name, row_y, text))
+
+    def test_rebuild_is_stable_and_preserves_refreshed_values(self):
+        """The nightly job runs the builder right after the refresh.
+
+        If a rebuild did not round-trip the values it just wrote, every night
+        would reset the card to the fallback snapshot in the builder.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            subprocess.run(
+                [sys.executable, str(ROOT / "tools" / "build_svg.py"),
+                 "--output-dir", directory],
+                check=True, capture_output=True, cwd=ROOT,
+            )
+            rebuilt = (Path(directory) / "dark_mode.svg").read_text(encoding="utf-8")
+        self.assertEqual(rebuilt, (ROOT / "dark_mode.svg").read_text(encoding="utf-8"))
 
     def test_uptime_handles_month_boundary(self):
         self.assertEqual(
@@ -173,13 +252,21 @@ class ProfileCardTests(unittest.TestCase):
                 }
             raise AssertionError(path)
 
-        with (
-            mock.patch.object(update_readme, "gh", side_effect=fake_gh),
-            mock.patch.object(update_readme, "fetch_repo_head", return_value="head-1"),
-        ):
-            values = update_readme.fetch_stats("secret")
+        with tempfile.TemporaryDirectory() as directory:
+            language_path = Path(directory) / "language_stats.json"
+            with (
+                mock.patch.object(update_readme, "gh", side_effect=fake_gh),
+                mock.patch.object(
+                    update_readme, "fetch_repo_head", return_value="head-1"
+                ),
+            ):
+                values = update_readme.fetch_stats(
+                    "secret", language_stats_path=language_path
+                )
+            language_totals = json.loads(language_path.read_text(encoding="utf-8"))
 
         self.assertEqual(values["contribution_data"], "4,360")
+        self.assertEqual(language_totals["languages"], [{"name": "Python", "bytes": 100}])
         self.assertNotIn("commit_data", values)
         self.assertNotIn("contrib_data", values)
         self.assertEqual(values["loc_data"], "15")
