@@ -23,8 +23,8 @@ from PIL import Image, ImageFilter, ImageOps
 
 
 HERE = Path(__file__).resolve().parent
-COLS, ROWS = 86, 67
-CHAR_WIDTH, LINE_HEIGHT = 3.0, 6.25
+COLS, ROWS = 430, 412
+CHAR_WIDTH, LINE_HEIGHT = 0.6, 1.0
 SS = 5
 
 # Glyph ramp with approximate ink coverage. Short on purpose: error diffusion
