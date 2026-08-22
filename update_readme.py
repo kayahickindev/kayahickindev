@@ -28,6 +28,7 @@ METRICS_URL = os.environ.get(
 )
 SITE_MAX_AGE_HOURS = int(os.environ.get("PROFILE_SITE_MAX_AGE_HOURS", "48"))
 LOC_CACHE_PATH = os.environ.get("LOC_CACHE_PATH", "loc_cache.json")
+LANGUAGE_STATS_PATH = os.environ.get("LANGUAGE_STATS_PATH", "language_stats.json")
 REFRESH_STATE_PATH = os.environ.get(
     "PROFILE_REFRESH_STATE_PATH", "profile_refresh_state.json"
 )
@@ -217,6 +218,24 @@ def save_loc_cache(path, repositories):
     })
 
 
+def save_language_stats(path, totals):
+    """Persist GitHub-detected language bytes for the card's language bar.
+
+    The same repository walk that totals lines of code already asks each
+    repository for its languages, so the bar covers exactly the repositories
+    behind the LOC figure instead of a public-only subset.
+    """
+    if not path:
+        return
+    write_json(path, {
+        "version": 1,
+        "languages": [
+            {"name": name, "bytes": count}
+            for name, count in sorted(totals.items(), key=lambda item: -item[1])
+        ],
+    })
+
+
 def fetch_repo_head(name, token):
     owner, repo_name = name.split("/", 1)
     data = graphql("""
@@ -310,7 +329,7 @@ def fetch_cached_repo_loc(name, author_id, token, loc_cache):
     }
 
 
-def fetch_stats(token, loc_cache_path=None):
+def fetch_stats(token, loc_cache_path=None, language_stats_path=None):
     _, user = gh("/user", token)
     followers = user["followers"]
 
@@ -358,12 +377,15 @@ def fetch_stats(token, loc_cache_path=None):
     ))
     loc_cache = load_loc_cache(loc_cache_path)
     refreshed_cache = {}
+    language_totals = {}
     adds = dels = 0
     for name in names:
         _, languages = gh(f"/repos/{name}/languages", token)
         if not languages:
             print(f"skipping {name}: no GitHub-detected source languages")
             continue
+        for language, byte_count in languages.items():
+            language_totals[language] = language_totals.get(language, 0) + byte_count
         repo_loc = fetch_cached_repo_loc(name, author_id, token, loc_cache)
         if not repo_loc:
             print(f"skipping {name}: no default-branch commit")
@@ -374,6 +396,7 @@ def fetch_stats(token, loc_cache_path=None):
         dels += repo_dels
 
     save_loc_cache(loc_cache_path, refreshed_cache)
+    save_language_stats(language_stats_path, language_totals)
 
     values = {
         "repo_data": f"{len(owned)}",
@@ -450,7 +473,7 @@ def main():
     values.update(site_values)
     token = os.environ.get("ACCESS_TOKEN")
     if token:
-        stats = fetch_stats(token, LOC_CACHE_PATH)
+        stats = fetch_stats(token, LOC_CACHE_PATH, LANGUAGE_STATS_PATH)
         if stats:
             values.update(stats)
     elif os.environ.get("REQUIRE_GITHUB_STATS") == "1":

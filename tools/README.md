@@ -1,8 +1,6 @@
 # Card generators
 
-The committed `avatar.png` is the exact public-avatar source used for the
-portrait. Its SHA-256 is
-`d31f8862e6f2a4be9aa1d1c9b287107e9191d32c06a64446051b3f0678a22967`.
+`ascii_v3.py` draws the portrait, `build_svg.py` assembles the two cards.
 
 From the repository root:
 
@@ -15,21 +13,53 @@ python3 -m venv .venv
 .venv/bin/cairosvg light_mode.svg -o light_mode.png -s 1
 ```
 
-`ascii_v3.py` also exposes the `legacy`, `open`, and `tight` presets so the
-same crop/density comparison can be regenerated with `--preset` and
-`--output`. `build_svg.py` accepts `--art` and `--output-dir` for rendering a
-candidate without changing the committed card. By default it reads the latest
-dynamic values from the committed `dark_mode.svg`, so rebuilding the portrait
-does not reset daily statistics; `--stats-from` can select another snapshot.
+`cairosvg` has no Consolas, so its output is only useful for checking colour and
+block placement. To eyeball the monospace columns, substitute a local face first:
+`sed 's/ConsolasFallback,Consolas,monospace/Menlo/' dark_mode.svg > /tmp/card.svg`.
 
-Layout constraints: real character advance is 9.6px at font size 16 (the
-`size-adjust: 109%` rule), so art stays at or below 37 columns at x=15 and the
-right column sits at x=375 with 63-character content lines. The builder asserts
-that alignment. `update_readme.py` rewrites the dynamic tspan values by id each
-night. Product traction is read from the fresh snapshot rendered by
-`kayahickin.com`; GitHub activity and LOC are refreshed with an authenticated
-GitHub token. The update fails instead of publishing fallback site data or a
-partial LOC total. LOC is summed from the authenticated user's non-merge commit
-history on each code repository's default branch, avoiding GitHub's delayed
-aggregate contributor-stat cache. If a stat is renamed, update `LINE_GROUPS`
-and keep its sibling `*_dots` tspan.
+## Portrait
+
+The committed sources are `headshot.png` (a 1024px studio headshot, cut out
+against white, SHA-256
+`ac110a723bcf3eb3f9de91486b0cb397f5f1a89bc5ad2f702d929bc33c3ff859`) and
+`avatar.png` (the 460px public GitHub avatar, SHA-256
+`d31f8862e6f2a4be9aa1d1c9b287107e9191d32c06a64446051b3f0678a22967`). The
+`open`, `balanced` and `tight` presets frame the headshot; `avatar` reproduces
+the older framing from the public avatar, which resolves noticeably less of the
+face at the same glyph grid. `--source` overrides a preset's photo.
+
+Glyphs are halftone density, error-diffused across a short ramp rather than
+mapped straight onto a long one, which is what makes the portrait read as a
+stipple instead of a solid slab. Density has to follow the panel it sits on:
+`--polarity dark` inks the *bright* end, because light glyphs on the dark card
+mean the navy suit falls away and the lit face carries the detail; `--polarity
+light` inks the dark end. Each polarity has its own tone curve, since the two
+are not mirror images - the dark card can clamp the suit away wholesale, while
+the light card has to hold it under a low ceiling or it floods into one block.
+Running with no `--polarity` writes both `ascii_art_dark.txt` and
+`ascii_art_light.txt`; `build_svg.py` picks the one matching each palette.
+
+## Layout
+
+Real character advance is 0.6 x font size (the `size-adjust: 109%` rule). The
+portrait is 72 columns of 4.2px and 47+ rows of 7.5px at font size 6; the
+readout is 63 characters of 10.2px at font size 17, starting at x=318. The
+builder asserts that the portrait, the language block and the readout all stay
+inside the 985x545 card, and that every readout line ends on the same column -
+a silently clamped leader is what let the lines-of-code row run two columns
+long and clip off the right edge. The card carries a `viewBox`, so a narrow
+README column scales it down instead of cutting it off.
+
+## Data
+
+`update_readme.py` rewrites the dynamic tspan values by id each night, then the
+workflow reruns `build_svg.py` to redraw both panels. Product traction is read
+from the fresh snapshot rendered by `kayahickin.com`; GitHub activity, LOC and
+the language-bar byte totals are refreshed with an authenticated GitHub token.
+The update fails instead of publishing fallback site data or a partial LOC
+total. LOC is summed from the authenticated user's non-merge commit history on
+each code repository's default branch, avoiding GitHub's delayed aggregate
+contributor-stat cache. `language_stats.json` records the same repositories'
+GitHub-detected language bytes, so the bar covers the same set as the LOC
+figure rather than a public-only subset. If a stat is renamed, update
+`LINE_GROUPS` and keep its sibling `*_dots` tspan.

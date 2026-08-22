@@ -1,0 +1,45 @@
+{
+  "languages": [
+    {
+      "bytes": 22669731,
+      "name": "Swift"
+    },
+    {
+      "bytes": 22183841,
+      "name": "TypeScript"
+    },
+    {
+      "bytes": 11586131,
+      "name": "JavaScript"
+    },
+    {
+      "bytes": 967490,
+      "name": "PLpgSQL"
+    },
+    {
+      "bytes": 428171,
+      "name": "Shell"
+    },
+    {
+      "bytes": 385449,
+      "name": "HTML"
+    },
+    {
+      "bytes": 160009,
+      "name": "Python"
+    },
+    {
+      "bytes": 137842,
+      "name": "CSS"
+    },
+    {
+      "bytes": 85072,
+      "name": "Kotlin"
+    },
+    {
+      "bytes": 1465,
+      "name": "Dockerfile"
+    }
+  ],
+  "version": 1
+}
