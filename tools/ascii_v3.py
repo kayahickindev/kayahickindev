@@ -23,8 +23,8 @@ from PIL import Image, ImageFilter, ImageOps
 
 
 HERE = Path(__file__).resolve().parent
-COLS, ROWS = 72, 56
-CHAR_WIDTH, LINE_HEIGHT = 3.6, 7.5
+COLS, ROWS = 86, 67
+CHAR_WIDTH, LINE_HEIGHT = 3.0, 6.25
 SS = 5
 
 # Glyph ramp with approximate ink coverage. Short on purpose: error diffusion
@@ -89,18 +89,18 @@ class Preset:
     light: Tone
 
 
-DARK_TONE = Tone(35.0, 99.0, 1.05, 0.95)
-LIGHT_TONE = Tone(1.0, 99.0, 1.35, 0.62)
+DARK_TONE = Tone(10.0, 99.0, 1.35, 1.00)
+LIGHT_TONE = Tone(1.0, 99.0, 1.55, 0.66)
 
 PRESETS = {
     # Head top sits at y=58 and the chin near y=570 in the committed 1024px
     # headshot, so these differ only in how much shoulder they keep.
-    "open": Preset("headshot.png", 500, 10, 940,
-                   0.80, 1.80, 0.28, 0.68, 0.12, DARK_TONE, LIGHT_TONE),
-    "balanced": Preset("headshot.png", 500, 28, 850,
-                       0.80, 1.80, 0.28, 0.68, 0.12, DARK_TONE, LIGHT_TONE),
-    "tight": Preset("headshot.png", 500, 52, 750,
-                    0.80, 1.80, 0.28, 0.68, 0.12, DARK_TONE, LIGHT_TONE),
+    "open": Preset("headshot.png", 1000, 20, 1880,
+                   0.80, 2.60, 0.28, 0.60, 0.06, DARK_TONE, LIGHT_TONE),
+    "balanced": Preset("headshot.png", 1000, 56, 1700,
+                       0.80, 2.60, 0.28, 0.60, 0.06, DARK_TONE, LIGHT_TONE),
+    "tight": Preset("headshot.png", 1000, 104, 1500,
+                    0.80, 2.60, 0.28, 0.60, 0.06, DARK_TONE, LIGHT_TONE),
 }
 
 
@@ -168,6 +168,9 @@ def local_contrast(gray: np.ndarray, preset: Preset) -> np.ndarray:
     whole ramp on the flat areas and erases the face, so the broad component is
     compressed and the high-pass residual is amplified before mapping.
     """
+    # Radius is in glyph cells, not pixels: anything the blur keeps is broad
+    # tone to be compressed, anything it loses is the detail to amplify. Wide
+    # radii here smooth away the features the portrait is made of.
     blurred = np.asarray(
         Image.fromarray(gray.astype(np.uint8)).filter(
             ImageFilter.GaussianBlur(radius=SS * 2.5)

@@ -111,8 +111,8 @@ class ProfileCardTests(unittest.TestCase):
             lines = (ROOT / "tools" / f"ascii_art_{polarity}.txt").read_text(
                 encoding="utf-8"
             ).splitlines()
-            self.assertLessEqual(len(lines), 56, polarity)
-            self.assertLessEqual(max(map(len, lines)), 72, polarity)
+            self.assertLessEqual(len(lines), 67, polarity)
+            self.assertLessEqual(max(map(len, lines)), 86, polarity)
             self.assertTrue(any(lines[:6]), polarity)
 
     def test_each_panel_carries_its_own_portrait_polarity(self):
