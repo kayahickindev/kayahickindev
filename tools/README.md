@@ -19,18 +19,26 @@ block placement. To eyeball the monospace columns, substitute a local face first
 
 ## Portrait
 
-The committed sources are `headshot.png` (a 1024px studio headshot, cut out
-against white, SHA-256
-`ac110a723bcf3eb3f9de91486b0cb397f5f1a89bc5ad2f702d929bc33c3ff859`) and
-`avatar.png` (the 460px public GitHub avatar, SHA-256
-`d31f8862e6f2a4be9aa1d1c9b287107e9191d32c06a64446051b3f0678a22967`). The
-`open`, `balanced` and `tight` presets frame the headshot; `avatar` reproduces
-the older framing from the public avatar, which resolves noticeably less of the
-face at the same glyph grid. `--source` overrides a preset's photo.
+The committed source is `headshot.png`, a 1024px downscale of the studio
+headshot that is also the public GitHub avatar, SHA-256
+`1fd5ad4ca71102c156934137088395552fabe1b096ac49cbfabf0b460bb01e97`. The subject
+is shot against a flat light backdrop, which `flood_from_border` separates from
+the white shirt by reachability rather than by threshold. `open`, `balanced` and
+`tight` differ only in how much shoulder they keep; `--source` overrides the
+photo.
+
+Framing is measured on the head, not the body: the subject's shoulders run off
+the right of the source frame, so centring on the bounding box would sit the
+face left of centre.
 
 Glyphs are halftone density, error-diffused across a short ramp rather than
 mapped straight onto a long one, which is what makes the portrait read as a
-stipple instead of a solid slab. Density has to follow the panel it sits on:
+stipple instead of a solid slab. Two terms exist only to hold the figure
+together: `rim_gain` inks the cutout's own boundary, because the hair is wispy
+and backlit and its luminance edge comes out as broken scatter, and
+`interior_floor` puts a faint dot field under every cell inside the silhouette,
+because the widest part of the head is dark hair that otherwise maps to no ink
+at all and leaves the portrait looking like debris. Density has to follow the panel it sits on:
 `--polarity dark` inks the *bright* end, because light glyphs on the dark card
 mean the navy suit falls away and the lit face carries the detail; `--polarity
 light` inks the dark end. Each polarity has its own tone curve, since the two
