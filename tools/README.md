@@ -19,9 +19,12 @@ block placement. To eyeball the monospace columns, substitute a local face first
 
 ## Portrait
 
-The committed source is `headshot.png`, a 1024px downscale of the studio
-headshot that is also the public GitHub avatar, SHA-256
-`1fd5ad4ca71102c156934137088395552fabe1b096ac49cbfabf0b460bb01e97`. The subject
+The committed source is `headshot.png`, the studio headshot that is also the
+public GitHub avatar, at 2048px, SHA-256
+`5508f9f83832d7bfc3ceb27ec8f84084d5fdf0f79ca4fd71f322bf58f203c3f1`. It is kept
+at full resolution deliberately: the crop is roughly a third of the frame, and
+at 1024px the glyph grid was sampling it at close to 1:1, so there was no
+detail left to supersample away. The subject
 is shot against a flat light backdrop, which `flood_from_border` separates from
 the white shirt by reachability rather than by threshold. `open`, `balanced` and
 `tight` differ only in how much shoulder they keep; `--source` overrides the
@@ -50,7 +53,7 @@ Running with no `--polarity` writes both `ascii_art_dark.txt` and
 ## Layout
 
 Real character advance is 0.6 x font size (the `size-adjust: 109%` rule). The
-portrait is 72 columns of 4.2px and 47+ rows of 7.5px at font size 6; the
+portrait is 86 columns of 3.0px and 67 rows of 6.25px at font size 5; the
 readout is 63 characters of 10.2px at font size 17, starting at x=318. The
 builder asserts that the portrait, the language block and the readout all stay
 inside the 985x545 card, and that every readout line ends on the same column -
