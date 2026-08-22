@@ -111,9 +111,12 @@ class ProfileCardTests(unittest.TestCase):
             lines = (ROOT / "tools" / f"ascii_art_{polarity}.txt").read_text(
                 encoding="utf-8"
             ).splitlines()
-            self.assertLessEqual(len(lines), 67, polarity)
-            self.assertLessEqual(max(map(len, lines)), 86, polarity)
-            self.assertTrue(any(lines[:6]), polarity)
+            self.assertLessEqual(len(lines), 412, polarity)
+            self.assertLessEqual(max(map(len, lines)), 430, polarity)
+            # The crop should start on the subject, not well above it. Counted
+            # as a fraction of the grid so it survives a density change.
+            head = max(1, round(len(lines) * 0.08))
+            self.assertTrue(any(lines[:head]), polarity)
 
     def test_each_panel_carries_its_own_portrait_polarity(self):
         """Ink is halftone density, so it has to follow the panel behind it.

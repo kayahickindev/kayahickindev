@@ -24,7 +24,16 @@ public GitHub avatar, at 2048px, SHA-256
 `5508f9f83832d7bfc3ceb27ec8f84084d5fdf0f79ca4fd71f322bf58f203c3f1`. It is kept
 at full resolution deliberately: the crop is roughly a third of the frame, and
 at 1024px the glyph grid was sampling it at close to 1:1, so there was no
-detail left to supersample away. The subject
+detail left to supersample away.
+
+The 430-column grid is the source's ceiling, not an arbitrary choice: the crop
+is about 860 source pixels wide, so each cell already covers two of them. Finer
+grids past this point invent detail rather than resolve it. Glyphs this small
+are sub-pixel, so the browser integrates them into continuous tone; the ramp
+still matters because a heavier glyph deposits more coverage per cell. That
+also means `rim_gain` draws a sub-pixel line and contributes little at this
+density - both it and `interior_floor` earn their keep only on coarser grids,
+which the presets can still be regenerated at. The subject
 is shot against a flat light backdrop, which `flood_from_border` separates from
 the white shirt by reachability rather than by threshold. `open`, `balanced` and
 `tight` differ only in how much shoulder they keep; `--source` overrides the
@@ -53,7 +62,7 @@ Running with no `--polarity` writes both `ascii_art_dark.txt` and
 ## Layout
 
 Real character advance is 0.6 x font size (the `size-adjust: 109%` rule). The
-portrait is 86 columns of 3.0px and 67 rows of 6.25px at font size 5; the
+portrait is 430 columns of 0.6px and 412 rows of 1.0px at font size 1; the
 readout is 63 characters of 10.2px at font size 17, starting at x=318. The
 builder asserts that the portrait, the language block and the readout all stay
 inside the 985x545 card, and that every readout line ends on the same column -

@@ -11,9 +11,9 @@ ROOT = HERE.parent
 CARD_W, CARD_H = 985, 545
 
 # ---- left column: portrait, language bar, legend ----
-COLS, ROWS = 86, 67
+COLS, ROWS = 430, 412
 ART_X, ART_Y0 = 15, 24
-ART_FS, ART_ADVANCE, ART_LINE_H = 5, 3.0, 6.25
+ART_FS, ART_ADVANCE, ART_LINE_H = 1, 0.6, 1.0
 ART_W = COLS * ART_ADVANCE
 
 BAR_X, BAR_Y, BAR_W, BAR_H = ART_X, 462, 260, 9
