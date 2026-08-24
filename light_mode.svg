@@ -433,18 +433,18 @@ text, tspan {white-space: pre;}
 <clipPath id="barClip"><rect x="15" y="462" width="260" height="9" rx="4.5"/></clipPath>
 <rect x="15" y="462" width="260" height="9" rx="4.5" fill="#eaeef2"/>
 <g clip-path="url(#barClip)">
-<rect x="15.00" y="462" width="101.20" height="9" fill="#3178c6"/>
-<rect x="116.20" y="462" width="98.79" height="9" fill="#F05138"/>
-<rect x="214.99" y="462" width="50.32" height="9" fill="#f1e05a"/>
-<rect x="265.31" y="462" width="4.19" height="9" fill="#336790"/>
-<rect x="269.50" y="462" width="1.91" height="9" fill="#89e051"/>
-<rect x="271.41" y="462" width="3.59" height="9" fill="#8b949e"/>
+<rect x="15.00" y="462" width="103.58" height="9" fill="#3178c6"/>
+<rect x="118.58" y="462" width="96.61" height="9" fill="#F05138"/>
+<rect x="215.19" y="462" width="50.36" height="9" fill="#f1e05a"/>
+<rect x="265.55" y="462" width="4.09" height="9" fill="#336790"/>
+<rect x="269.64" y="462" width="1.86" height="9" fill="#89e051"/>
+<rect x="271.50" y="462" width="3.50" height="9" fill="#8b949e"/>
 </g>
 <g font-size="10.5px" fill="#24292f">
 <circle cx="19" cy="488" r="4" fill="#3178c6"/>
-<text x="29" y="492">TypeScript <tspan class="cc">38.9%</tspan></text>
+<text x="29" y="492">TypeScript <tspan class="cc">39.8%</tspan></text>
 <circle cx="154" cy="488" r="4" fill="#F05138"/>
-<text x="164" y="492">Swift <tspan class="cc">38.0%</tspan></text>
+<text x="164" y="492">Swift <tspan class="cc">37.2%</tspan></text>
 <circle cx="19" cy="508" r="4" fill="#f1e05a"/>
 <text x="29" y="512">JavaScript <tspan class="cc">19.4%</tspan></text>
 <circle cx="154" cy="508" r="4" fill="#336790"/>
@@ -452,13 +452,13 @@ text, tspan {white-space: pre;}
 <circle cx="19" cy="528" r="4" fill="#89e051"/>
 <text x="29" y="532">Shell <tspan class="cc">0.7%</tspan></text>
 <circle cx="154" cy="528" r="4" fill="#8b949e"/>
-<text x="164" y="532">Other <tspan class="cc">1.4%</tspan></text>
+<text x="164" y="532">Other <tspan class="cc">1.3%</tspan></text>
 </g>
 <text x="318" y="30" fill="#24292f">
 <tspan x="318" y="30">kaya@myfutureself</tspan> ─────────────────────────────────────────────
 <tspan x="318" y="51" class="cc">. </tspan><tspan class="key">Role</tspan>:<tspan class="cc"> ...................................... </tspan><tspan class="value">Co-founder &amp; CTO</tspan>
 <tspan x="318" y="72" class="cc">. </tspan><tspan class="key">Location</tspan>:<tspan class="cc"> ..................................... </tspan><tspan class="value">Cleveland, OH</tspan>
-<tspan x="318" y="93" class="cc">. </tspan><tspan class="key">Uptime</tspan>:<tspan class="cc" id="age_data_dots"> .......................... </tspan><tspan class="value" id="age_data">22 years, 7 months, 4 days</tspan>
+<tspan x="318" y="93" class="cc">. </tspan><tspan class="key">Uptime</tspan>:<tspan class="cc" id="age_data_dots"> .......................... </tspan><tspan class="value" id="age_data">22 years, 7 months, 5 days</tspan>
 <tspan x="318" y="114" class="cc">. </tspan><tspan class="key">Company</tspan>:<tspan class="cc"> ................................. </tspan><tspan class="value">MyFutureSelf, Inc.</tspan>
 <tspan x="318" y="135" class="cc">. </tspan><tspan class="key">Focus</tspan>:<tspan class="cc"> .................. </tspan><tspan class="value">consumer AI, behavior change, voice</tspan>
 <tspan x="318" y="156" class="cc">. </tspan><tspan class="key">Toolchain</tspan>:<tspan class="cc"> ............ </tspan><tspan class="value">Claude Code, Codex, Ghostty, OpenClaw</tspan>
@@ -473,8 +473,8 @@ text, tspan {white-space: pre;}
 <tspan x="318" y="408" class="cc">. </tspan><tspan class="key">Website</tspan>:<tspan class="cc"> ..................................... </tspan><tspan class="value">kayahickin.com</tspan>
 <tspan x="318" y="429" class="cc">. </tspan><tspan class="key">X</tspan>:<tspan class="cc"> .............................................. </tspan><tspan class="value">@KayaHickin</tspan>
 <tspan x="318" y="471">─ GitHub Stats</tspan> ────────────────────────────────────────────────
-<tspan x="318" y="492" class="cc">. </tspan><tspan class="key">Repos</tspan>:<tspan class="cc" id="repo_data_dots"> .... </tspan><tspan class="value" id="repo_data">9</tspan> | <tspan class="key">PRs Merged</tspan>:<tspan class="cc" id="pr_data_dots"> ........................... </tspan><tspan class="value" id="pr_data">1,649</tspan>
-<tspan x="318" y="513" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .... </tspan><tspan class="value" id="contribution_data">8,335</tspan> | <tspan class="key">Followers</tspan>:<tspan class="cc" id="follower_data_dots"> .............. </tspan><tspan class="value" id="follower_data">11</tspan>
-<tspan x="318" y="534" class="cc">. </tspan><tspan class="key">Lines of Code</tspan>:<tspan class="cc" id="loc_data_dots"> ......... </tspan><tspan class="value" id="loc_data">4,448,721</tspan> (<tspan class="addColor" id="loc_add">5,482,062</tspan><tspan class="addColor">++</tspan>, <tspan class="delColor" id="loc_del">1,033,341</tspan><tspan class="delColor">--</tspan>)
+<tspan x="318" y="492" class="cc">. </tspan><tspan class="key">Repos</tspan>:<tspan class="cc" id="repo_data_dots"> .... </tspan><tspan class="value" id="repo_data">9</tspan> | <tspan class="key">PRs Merged</tspan>:<tspan class="cc" id="pr_data_dots"> ........................... </tspan><tspan class="value" id="pr_data">1,691</tspan>
+<tspan x="318" y="513" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .... </tspan><tspan class="value" id="contribution_data">8,427</tspan> | <tspan class="key">Followers</tspan>:<tspan class="cc" id="follower_data_dots"> .............. </tspan><tspan class="value" id="follower_data">11</tspan>
+<tspan x="318" y="534" class="cc">. </tspan><tspan class="key">Lines of Code</tspan>:<tspan class="cc" id="loc_data_dots"> ......... </tspan><tspan class="value" id="loc_data">4,480,665</tspan> (<tspan class="addColor" id="loc_add">5,519,890</tspan><tspan class="addColor">++</tspan>, <tspan class="delColor" id="loc_del">1,039,225</tspan><tspan class="delColor">--</tspan>)
 </text>
 </svg>
