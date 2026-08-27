@@ -1,6 +1,6 @@
 {
-  "metricsGeneratedAt": "2026-08-26T04:15:41.699Z",
-  "refreshedAt": "2026-08-26T07:27:59.718010Z",
-  "refreshedOn": "2026-08-26",
-  "trigger": "repository_dispatch"
+  "metricsGeneratedAt": "2026-08-27T04:15:39.314Z",
+  "refreshedAt": "2026-08-27T05:00:53.143140Z",
+  "refreshedOn": "2026-08-27",
+  "trigger": "schedule"
 }
