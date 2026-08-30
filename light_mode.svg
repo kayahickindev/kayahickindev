@@ -433,20 +433,20 @@ text, tspan {white-space: pre;}
 <clipPath id="barClip"><rect x="15" y="462" width="260" height="9" rx="4.5"/></clipPath>
 <rect x="15" y="462" width="260" height="9" rx="4.5" fill="#eaeef2"/>
 <g clip-path="url(#barClip)">
-<rect x="15.00" y="462" width="101.48" height="9" fill="#3178c6"/>
-<rect x="116.48" y="462" width="99.73" height="9" fill="#F05138"/>
-<rect x="216.21" y="462" width="50.93" height="9" fill="#f1e05a"/>
-<rect x="267.14" y="462" width="2.64" height="9" fill="#336790"/>
-<rect x="269.78" y="462" width="1.79" height="9" fill="#89e051"/>
-<rect x="271.57" y="462" width="3.43" height="9" fill="#8b949e"/>
+<rect x="15.00" y="462" width="101.89" height="9" fill="#F05138"/>
+<rect x="116.89" y="462" width="100.04" height="9" fill="#3178c6"/>
+<rect x="216.93" y="462" width="50.33" height="9" fill="#f1e05a"/>
+<rect x="267.26" y="462" width="2.60" height="9" fill="#336790"/>
+<rect x="269.86" y="462" width="1.76" height="9" fill="#89e051"/>
+<rect x="271.62" y="462" width="3.38" height="9" fill="#8b949e"/>
 </g>
 <g font-size="10.5px" fill="#24292f">
-<circle cx="19" cy="488" r="4" fill="#3178c6"/>
-<text x="29" y="492">TypeScript <tspan class="cc">39.0%</tspan></text>
-<circle cx="154" cy="488" r="4" fill="#F05138"/>
-<text x="164" y="492">Swift <tspan class="cc">38.4%</tspan></text>
+<circle cx="19" cy="488" r="4" fill="#F05138"/>
+<text x="29" y="492">Swift <tspan class="cc">39.2%</tspan></text>
+<circle cx="154" cy="488" r="4" fill="#3178c6"/>
+<text x="164" y="492">TypeScript <tspan class="cc">38.5%</tspan></text>
 <circle cx="19" cy="508" r="4" fill="#f1e05a"/>
-<text x="29" y="512">JavaScript <tspan class="cc">19.6%</tspan></text>
+<text x="29" y="512">JavaScript <tspan class="cc">19.4%</tspan></text>
 <circle cx="154" cy="508" r="4" fill="#336790"/>
 <text x="164" y="512">PLpgSQL <tspan class="cc">1.0%</tspan></text>
 <circle cx="19" cy="528" r="4" fill="#89e051"/>
@@ -467,14 +467,14 @@ text, tspan {white-space: pre;}
 <tspan x="318" y="261">─ MyFutureSelf</tspan> ────────────────────────────────────────────────
 <tspan x="318" y="282" class="cc">. </tspan><tspan class="key">Downloads</tspan>:<tspan class="cc" id="downloads_data_dots"> .... </tspan><tspan class="value" id="downloads_data">62K+</tspan> | <tspan class="key">Paid Subs</tspan>:<tspan class="cc" id="paid_data_dots"> ..................... </tspan><tspan class="value" id="paid_data">3.5K+</tspan>
 <tspan x="318" y="303" class="cc">. </tspan><tspan class="key">Annual Run Rate</tspan>:<tspan class="cc" id="arr_data_dots"> .... </tspan><tspan class="value" id="arr_data">$231K+</tspan> | <tspan class="key">Actions</tspan>:<tspan class="cc" id="actions_data_dots"> ............... </tspan><tspan class="value" id="actions_data">172K+</tspan>
-<tspan x="318" y="324" class="cc">. </tspan><tspan class="key">Rating</tspan>:<tspan class="cc" id="rating_data_dots"> .... </tspan><tspan class="value" id="rating_data">4.7</tspan> | <tspan class="key">Reviews</tspan>:<tspan class="cc" id="reviews_data_dots"> ........................... </tspan><tspan class="value" id="reviews_data">1,090</tspan>
+<tspan x="318" y="324" class="cc">. </tspan><tspan class="key">Rating</tspan>:<tspan class="cc" id="rating_data_dots"> .... </tspan><tspan class="value" id="rating_data">4.7</tspan> | <tspan class="key">Reviews</tspan>:<tspan class="cc" id="reviews_data_dots"> ........................... </tspan><tspan class="value" id="reviews_data">1,092</tspan>
 <tspan x="318" y="366">─ Contact</tspan> ─────────────────────────────────────────────────────
 <tspan x="318" y="387" class="cc">. </tspan><tspan class="key">Email</tspan>.<tspan class="key">Work</tspan>:<tspan class="cc"> ........................ </tspan><tspan class="value">kaya@myfutureselfapp.com</tspan>
 <tspan x="318" y="408" class="cc">. </tspan><tspan class="key">Website</tspan>:<tspan class="cc"> ..................................... </tspan><tspan class="value">kayahickin.com</tspan>
 <tspan x="318" y="429" class="cc">. </tspan><tspan class="key">X</tspan>:<tspan class="cc"> .............................................. </tspan><tspan class="value">@KayaHickin</tspan>
 <tspan x="318" y="471">─ GitHub Stats</tspan> ────────────────────────────────────────────────
-<tspan x="318" y="492" class="cc">. </tspan><tspan class="key">Repos</tspan>:<tspan class="cc" id="repo_data_dots"> .... </tspan><tspan class="value" id="repo_data">9</tspan> | <tspan class="key">PRs Merged</tspan>:<tspan class="cc" id="pr_data_dots"> ........................... </tspan><tspan class="value" id="pr_data">1,899</tspan>
-<tspan x="318" y="513" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .... </tspan><tspan class="value" id="contribution_data">9,072</tspan> | <tspan class="key">Followers</tspan>:<tspan class="cc" id="follower_data_dots"> .............. </tspan><tspan class="value" id="follower_data">12</tspan>
-<tspan x="318" y="534" class="cc">. </tspan><tspan class="key">Lines of Code</tspan>:<tspan class="cc" id="loc_data_dots"> ......... </tspan><tspan class="value" id="loc_data">4,592,011</tspan> (<tspan class="addColor" id="loc_add">5,694,168</tspan><tspan class="addColor">++</tspan>, <tspan class="delColor" id="loc_del">1,102,157</tspan><tspan class="delColor">--</tspan>)
+<tspan x="318" y="492" class="cc">. </tspan><tspan class="key">Repos</tspan>:<tspan class="cc" id="repo_data_dots"> .... </tspan><tspan class="value" id="repo_data">9</tspan> | <tspan class="key">PRs Merged</tspan>:<tspan class="cc" id="pr_data_dots"> ........................... </tspan><tspan class="value" id="pr_data">1,932</tspan>
+<tspan x="318" y="513" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .... </tspan><tspan class="value" id="contribution_data">9,136</tspan> | <tspan class="key">Followers</tspan>:<tspan class="cc" id="follower_data_dots"> .............. </tspan><tspan class="value" id="follower_data">12</tspan>
+<tspan x="318" y="534" class="cc">. </tspan><tspan class="key">Lines of Code</tspan>:<tspan class="cc" id="loc_data_dots"> ......... </tspan><tspan class="value" id="loc_data">4,615,004</tspan> (<tspan class="addColor" id="loc_add">5,720,284</tspan><tspan class="addColor">++</tspan>, <tspan class="delColor" id="loc_del">1,105,280</tspan><tspan class="delColor">--</tspan>)
 </text>
 </svg>
