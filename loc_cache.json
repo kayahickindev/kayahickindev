@@ -1,9 +1,9 @@
 {
   "repositories": {
     "MyFutureSelf/MyFutureSelf": {
-      "additions": 1670044,
-      "deletions": 757805,
-      "headOid": "5d136158c7fc565d83b21a6ec618029e65a97a1e"
+      "additions": 1697201,
+      "deletions": 769316,
+      "headOid": "e6286f332da87d29724df260bb458378a625c22e"
     },
     "MyFutureSelf/candidate-skills-assessment": {
       "additions": 363284,
@@ -21,9 +21,9 @@
       "headOid": "fc033b033c62152d40ca48b54eaf59297cc439eb"
     },
     "MyFutureSelf/myfutureself-android": {
-      "additions": 581491,
-      "deletions": 97570,
-      "headOid": "5f1b6c48f82f1ae33d3b16d3806d5007e2163bc8"
+      "additions": 589217,
+      "deletions": 102760,
+      "headOid": "f21de97e8e727ed714adeb7013019cebf43f32ed"
     },
     "MyFutureSelf/myfutureself-raise-crm": {
       "additions": 8566,
@@ -68,7 +68,7 @@
     "kayahickindev/kayahickindev": {
       "additions": 5456,
       "deletions": 1654,
-      "headOid": "59da4d941e4c394d164390a3a8d3712669703a03"
+      "headOid": "c58a341aaf68103ccfbf991c45a40bb91226e8e0"
     },
     "kayahickindev/sigma-chi-public-directory": {
       "additions": 1246,
