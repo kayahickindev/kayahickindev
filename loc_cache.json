@@ -1,19 +1,24 @@
 {
   "repositories": {
     "MyFutureSelf/MyFutureSelf": {
-      "additions": 1759722,
-      "deletions": 773729,
-      "headOid": "5c4ebbab56772c8f524edd064f9c82cb08dc171b"
+      "additions": 1766758,
+      "deletions": 774976,
+      "headOid": "94b71f87a16a81ba384f89e073bc38ec2185053e"
     },
     "MyFutureSelf/candidate-skills-assessment": {
       "additions": 363284,
       "deletions": 2,
       "headOid": "2ddbd117cb31a4fc6fd5bb25003fa85e5aba40c6"
     },
+    "MyFutureSelf/mfs-competitors": {
+      "additions": 246,
+      "deletions": 5,
+      "headOid": "aebdd1b123e0443f0b9f3cd370f3278a70d3a226"
+    },
     "MyFutureSelf/mfs-miamiuniversity": {
-      "additions": 2781567,
-      "deletions": 268453,
-      "headOid": "2f3e5efbb55a40197f056cb026696c86bae25672"
+      "additions": 2793419,
+      "deletions": 276374,
+      "headOid": "2f9129eaf5000edabb2594874fdf214f722e6ae1"
     },
     "MyFutureSelf/mfs-preseed-deck": {
       "additions": 3383,
@@ -21,9 +26,9 @@
       "headOid": "fc033b033c62152d40ca48b54eaf59297cc439eb"
     },
     "MyFutureSelf/myfutureself-android": {
-      "additions": 637741,
-      "deletions": 130385,
-      "headOid": "4100b3d104bba075024e5cdb198d5cbfc7319275"
+      "additions": 645256,
+      "deletions": 134460,
+      "headOid": "523b128f9baf6d02e357db3787e32e47e7e1b175"
     },
     "MyFutureSelf/myfutureself-raise-crm": {
       "additions": 8566,
@@ -33,7 +38,7 @@
     "MyFutureSelf/myfutureself-website": {
       "additions": 32977,
       "deletions": 5473,
-      "headOid": "eb801cab7afccae37a98049a6785196edcf71a8b"
+      "headOid": "00c95140f5fd4c98cf9030bd2bf7cbc4a6f88d58"
     },
     "MyFutureSelf/viral-loop-dashboard": {
       "additions": 55819,
@@ -68,7 +73,7 @@
     "kayahickindev/kayahickindev": {
       "additions": 5456,
       "deletions": 1654,
-      "headOid": "11c424396e50d2f1cdd6f54863c3c4eb70dc49a9"
+      "headOid": "9081107d6065e5e2503b15d95e8e51b6f31578b3"
     },
     "kayahickindev/sigma-chi-public-directory": {
       "additions": 1246,
