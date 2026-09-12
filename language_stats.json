@@ -1,19 +1,19 @@
 {
   "languages": [
     {
-      "bytes": 33187866,
-      "name": "Swift"
-    },
-    {
-      "bytes": 33123574,
+      "bytes": 33222281,
       "name": "TypeScript"
     },
     {
-      "bytes": 12299689,
+      "bytes": 33219492,
+      "name": "Swift"
+    },
+    {
+      "bytes": 12404414,
       "name": "JavaScript"
     },
     {
-      "bytes": 741546,
+      "bytes": 755840,
       "name": "PLpgSQL"
     },
     {
@@ -25,7 +25,7 @@
       "name": "HTML"
     },
     {
-      "bytes": 303498,
+      "bytes": 310894,
       "name": "Python"
     },
     {
@@ -43,6 +43,10 @@
     {
       "bytes": 5864,
       "name": "Java"
+    },
+    {
+      "bytes": 173,
+      "name": "Dockerfile"
     }
   ],
   "version": 1
