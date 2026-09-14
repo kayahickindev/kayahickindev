@@ -1,15 +1,15 @@
 {
   "languages": [
     {
-      "bytes": 33640990,
+      "bytes": 36570926,
       "name": "Swift"
     },
     {
-      "bytes": 33619064,
+      "bytes": 34017718,
       "name": "TypeScript"
     },
     {
-      "bytes": 12535463,
+      "bytes": 12975712,
       "name": "JavaScript"
     },
     {
@@ -17,11 +17,11 @@
       "name": "PLpgSQL"
     },
     {
-      "bytes": 507185,
+      "bytes": 551330,
       "name": "Shell"
     },
     {
-      "bytes": 388018,
+      "bytes": 390444,
       "name": "HTML"
     },
     {
@@ -29,7 +29,7 @@
       "name": "Python"
     },
     {
-      "bytes": 156576,
+      "bytes": 173262,
       "name": "CSS"
     },
     {
@@ -37,16 +37,32 @@
       "name": "Kotlin"
     },
     {
+      "bytes": 25932,
+      "name": "Objective-C"
+    },
+    {
       "bytes": 21152,
       "name": "Metal"
+    },
+    {
+      "bytes": 10293,
+      "name": "Makefile"
     },
     {
       "bytes": 5864,
       "name": "Java"
     },
     {
-      "bytes": 173,
+      "bytes": 3872,
+      "name": "Ruby"
+    },
+    {
+      "bytes": 1223,
       "name": "Dockerfile"
+    },
+    {
+      "bytes": 523,
+      "name": "Rich Text Format"
     }
   ],
   "version": 1
