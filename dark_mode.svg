@@ -433,32 +433,32 @@ text, tspan {white-space: pre;}
 <clipPath id="barClip"><rect x="15" y="462" width="260" height="9" rx="4.5"/></clipPath>
 <rect x="15" y="462" width="260" height="9" rx="4.5" fill="#21262d"/>
 <g clip-path="url(#barClip)">
-<rect x="15.00" y="462" width="88.80" height="9" fill="#F05138"/>
-<rect x="103.80" y="462" width="84.75" height="9" fill="#3178c6"/>
-<rect x="188.55" y="462" width="43.01" height="9" fill="#336790"/>
-<rect x="231.56" y="462" width="32.04" height="9" fill="#f1e05a"/>
-<rect x="263.60" y="462" width="8.23" height="9" fill="#3572A5"/>
-<rect x="271.83" y="462" width="3.17" height="9" fill="#8b949e"/>
+<rect x="15.00" y="462" width="88.29" height="9" fill="#F05138"/>
+<rect x="103.29" y="462" width="84.45" height="9" fill="#3178c6"/>
+<rect x="187.74" y="462" width="42.49" height="9" fill="#336790"/>
+<rect x="230.23" y="462" width="33.15" height="9" fill="#f1e05a"/>
+<rect x="263.39" y="462" width="8.20" height="9" fill="#3572A5"/>
+<rect x="271.59" y="462" width="3.41" height="9" fill="#8b949e"/>
 </g>
 <g font-size="10.5px" fill="#c9d1d9">
 <circle cx="19" cy="488" r="4" fill="#F05138"/>
-<text x="29" y="492">Swift <tspan class="cc">34.2%</tspan></text>
+<text x="29" y="492">Swift <tspan class="cc">34.0%</tspan></text>
 <circle cx="154" cy="488" r="4" fill="#3178c6"/>
-<text x="164" y="492">TypeScript <tspan class="cc">32.6%</tspan></text>
+<text x="164" y="492">TypeScript <tspan class="cc">32.5%</tspan></text>
 <circle cx="19" cy="508" r="4" fill="#336790"/>
-<text x="29" y="512">PLpgSQL <tspan class="cc">16.5%</tspan></text>
+<text x="29" y="512">PLpgSQL <tspan class="cc">16.3%</tspan></text>
 <circle cx="154" cy="508" r="4" fill="#f1e05a"/>
-<text x="164" y="512">JavaScript <tspan class="cc">12.3%</tspan></text>
+<text x="164" y="512">JavaScript <tspan class="cc">12.8%</tspan></text>
 <circle cx="19" cy="528" r="4" fill="#3572A5"/>
 <text x="29" y="532">Python <tspan class="cc">3.2%</tspan></text>
 <circle cx="154" cy="528" r="4" fill="#8b949e"/>
-<text x="164" y="532">Other <tspan class="cc">1.2%</tspan></text>
+<text x="164" y="532">Other <tspan class="cc">1.3%</tspan></text>
 </g>
 <text x="318" y="30" fill="#c9d1d9">
 <tspan x="318" y="30">kaya@myfutureself</tspan> ─────────────────────────────────────────────
 <tspan x="318" y="51" class="cc">. </tspan><tspan class="key">Role</tspan>:<tspan class="cc"> ...................................... </tspan><tspan class="value">Co-founder &amp; CTO</tspan>
 <tspan x="318" y="72" class="cc">. </tspan><tspan class="key">Location</tspan>:<tspan class="cc"> ..................................... </tspan><tspan class="value">Cleveland, OH</tspan>
-<tspan x="318" y="93" class="cc">. </tspan><tspan class="key">Uptime</tspan>:<tspan class="cc" id="age_data_dots"> ......................... </tspan><tspan class="value" id="age_data">22 years, 7 months, 29 days</tspan>
+<tspan x="318" y="93" class="cc">. </tspan><tspan class="key">Uptime</tspan>:<tspan class="cc" id="age_data_dots"> ......................... </tspan><tspan class="value" id="age_data">22 years, 7 months, 30 days</tspan>
 <tspan x="318" y="114" class="cc">. </tspan><tspan class="key">Company</tspan>:<tspan class="cc"> ................................. </tspan><tspan class="value">MyFutureSelf, Inc.</tspan>
 <tspan x="318" y="135" class="cc">. </tspan><tspan class="key">Focus</tspan>:<tspan class="cc"> .................. </tspan><tspan class="value">consumer AI, behavior change, voice</tspan>
 <tspan x="318" y="156" class="cc">. </tspan><tspan class="key">Toolchain</tspan>:<tspan class="cc"> ............ </tspan><tspan class="value">Claude Code, Codex, Ghostty, OpenClaw</tspan>
@@ -473,8 +473,8 @@ text, tspan {white-space: pre;}
 <tspan x="318" y="408" class="cc">. </tspan><tspan class="key">Website</tspan>:<tspan class="cc"> ..................................... </tspan><tspan class="value">kayahickin.com</tspan>
 <tspan x="318" y="429" class="cc">. </tspan><tspan class="key">X</tspan>:<tspan class="cc"> .............................................. </tspan><tspan class="value">@KayaHickin</tspan>
 <tspan x="318" y="471">─ GitHub Stats</tspan> ────────────────────────────────────────────────
-<tspan x="318" y="492" class="cc">. </tspan><tspan class="key">Repos</tspan>:<tspan class="cc" id="repo_data_dots"> .... </tspan><tspan class="value" id="repo_data">12</tspan> | <tspan class="key">PRs Merged</tspan>:<tspan class="cc" id="pr_data_dots"> .......................... </tspan><tspan class="value" id="pr_data">2,836</tspan>
-<tspan x="318" y="513" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .... </tspan><tspan class="value" id="contribution_data">14,172</tspan> | <tspan class="key">Followers</tspan>:<tspan class="cc" id="follower_data_dots"> ............. </tspan><tspan class="value" id="follower_data">15</tspan>
-<tspan x="318" y="534" class="cc">. </tspan><tspan class="key">Lines of Code</tspan>:<tspan class="cc" id="loc_data_dots"> ......... </tspan><tspan class="value" id="loc_data">5,182,169</tspan> (<tspan class="addColor" id="loc_add">6,914,512</tspan><tspan class="addColor">++</tspan>, <tspan class="delColor" id="loc_del">1,732,343</tspan><tspan class="delColor">--</tspan>)
+<tspan x="318" y="492" class="cc">. </tspan><tspan class="key">Repos</tspan>:<tspan class="cc" id="repo_data_dots"> .... </tspan><tspan class="value" id="repo_data">14</tspan> | <tspan class="key">PRs Merged</tspan>:<tspan class="cc" id="pr_data_dots"> .......................... </tspan><tspan class="value" id="pr_data">2,856</tspan>
+<tspan x="318" y="513" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .... </tspan><tspan class="value" id="contribution_data">14,453</tspan> | <tspan class="key">Followers</tspan>:<tspan class="cc" id="follower_data_dots"> ............. </tspan><tspan class="value" id="follower_data">15</tspan>
+<tspan x="318" y="534" class="cc">. </tspan><tspan class="key">Lines of Code</tspan>:<tspan class="cc" id="loc_data_dots"> ......... </tspan><tspan class="value" id="loc_data">5,313,169</tspan> (<tspan class="addColor" id="loc_add">7,064,943</tspan><tspan class="addColor">++</tspan>, <tspan class="delColor" id="loc_del">1,751,774</tspan><tspan class="delColor">--</tspan>)
 </text>
 </svg>
