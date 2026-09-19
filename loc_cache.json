@@ -21,9 +21,9 @@
       "headOid": "aebdd1b123e0443f0b9f3cd370f3278a70d3a226"
     },
     "MyFutureSelf/mfs-miamiuniversity": {
-      "additions": 3050284,
+      "additions": 3050632,
       "deletions": 367744,
-      "headOid": "2593f45d7bbac5c1bbfe07db430aa8350face612"
+      "headOid": "b24634e8fbb42c774cd3f3e803dc8ffd010c7b72"
     },
     "MyFutureSelf/mfs-preseed-deck": {
       "additions": 3383,
@@ -31,9 +31,9 @@
       "headOid": "fc033b033c62152d40ca48b54eaf59297cc439eb"
     },
     "MyFutureSelf/myfutureself-android": {
-      "additions": 847523,
+      "additions": 847802,
       "deletions": 191831,
-      "headOid": "80fef9df2c5548bdcf952a5f5499fb4d161ec631"
+      "headOid": "ecf7ce286877cdd634b21efe925863b6c49fe20c"
     },
     "MyFutureSelf/myfutureself-raise-crm": {
       "additions": 23114,
@@ -83,17 +83,17 @@
     "kayahickindev/kayahickindev": {
       "additions": 5456,
       "deletions": 1654,
-      "headOid": "9ca39af83fe447fb27d11070f2612cde813b2cb2"
+      "headOid": "ecfbf5d236edd542e1cee549edc8dcfc87d7dcbf"
     },
     "kayahickindev/mfs-company-brain": {
-      "additions": 236047,
-      "deletions": 96536,
-      "headOid": "9ce2a7c24825f097c2249660f5146fd616a8b3e9"
+      "additions": 269387,
+      "deletions": 123729,
+      "headOid": "9bedd7df6eb147ea54606b9d7043fc135cb5068a"
     },
     "kayahickindev/mfs-company-map": {
-      "additions": 11747,
-      "deletions": 4767,
-      "headOid": "e4bb58efca8bf28aa88e96021851ac8b77fcdac0"
+      "additions": 12138,
+      "deletions": 5158,
+      "headOid": "591049e932c03fb62790f34926ed1869c936fca0"
     },
     "kayahickindev/posthog-ios": {
       "additions": 0,
