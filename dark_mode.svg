@@ -433,12 +433,12 @@ text, tspan {white-space: pre;}
 <clipPath id="barClip"><rect x="15" y="462" width="260" height="9" rx="4.5"/></clipPath>
 <rect x="15" y="462" width="260" height="9" rx="4.5" fill="#21262d"/>
 <g clip-path="url(#barClip)">
-<rect x="15.00" y="462" width="89.00" height="9" fill="#F05138"/>
-<rect x="104.00" y="462" width="84.56" height="9" fill="#3178c6"/>
-<rect x="188.56" y="462" width="41.58" height="9" fill="#336790"/>
-<rect x="230.14" y="462" width="33.33" height="9" fill="#f1e05a"/>
-<rect x="263.47" y="462" width="8.06" height="9" fill="#3572A5"/>
-<rect x="271.53" y="462" width="3.47" height="9" fill="#8b949e"/>
+<rect x="15.00" y="462" width="88.91" height="9" fill="#F05138"/>
+<rect x="103.91" y="462" width="84.61" height="9" fill="#3178c6"/>
+<rect x="188.52" y="462" width="41.53" height="9" fill="#336790"/>
+<rect x="230.05" y="462" width="33.36" height="9" fill="#f1e05a"/>
+<rect x="263.41" y="462" width="8.05" height="9" fill="#3572A5"/>
+<rect x="271.47" y="462" width="3.53" height="9" fill="#8b949e"/>
 </g>
 <g font-size="10.5px" fill="#c9d1d9">
 <circle cx="19" cy="488" r="4" fill="#F05138"/>
@@ -452,7 +452,7 @@ text, tspan {white-space: pre;}
 <circle cx="19" cy="528" r="4" fill="#3572A5"/>
 <text x="29" y="532">Python <tspan class="cc">3.1%</tspan></text>
 <circle cx="154" cy="528" r="4" fill="#8b949e"/>
-<text x="164" y="532">Other <tspan class="cc">1.3%</tspan></text>
+<text x="164" y="532">Other <tspan class="cc">1.4%</tspan></text>
 </g>
 <text x="318" y="30" fill="#c9d1d9">
 <tspan x="318" y="30">kaya@myfutureself</tspan> ─────────────────────────────────────────────
@@ -465,16 +465,16 @@ text, tspan {white-space: pre;}
 <tspan x="318" y="198" class="cc">. </tspan><tspan class="key">Stack</tspan>.<tspan class="key">Languages</tspan>:<tspan class="cc"> .......................... </tspan><tspan class="value">Swift, TypeScript</tspan>
 <tspan x="318" y="219" class="cc">. </tspan><tspan class="key">Stack</tspan>.<tspan class="key">Frameworks</tspan>:<tspan class="cc"> ................ </tspan><tspan class="value">SwiftUI, Next.js, Firebase</tspan>
 <tspan x="318" y="261">─ MyFutureSelf</tspan> ────────────────────────────────────────────────
-<tspan x="318" y="282" class="cc">. </tspan><tspan class="key">Downloads</tspan>:<tspan class="cc" id="downloads_data_dots"> .... </tspan><tspan class="value" id="downloads_data">71K+</tspan> | <tspan class="key">Paid Subs</tspan>:<tspan class="cc" id="paid_data_dots"> ..................... </tspan><tspan class="value" id="paid_data">3.9K+</tspan>
-<tspan x="318" y="303" class="cc">. </tspan><tspan class="key">Annual Run Rate</tspan>:<tspan class="cc" id="arr_data_dots"> .... </tspan><tspan class="value" id="arr_data">$147K</tspan> | <tspan class="key">Actions</tspan>:<tspan class="cc" id="actions_data_dots"> ................ </tspan><tspan class="value" id="actions_data">247K+</tspan>
-<tspan x="318" y="324" class="cc">. </tspan><tspan class="key">Rating</tspan>:<tspan class="cc" id="rating_data_dots"> .... </tspan><tspan class="value" id="rating_data">4.7</tspan> | <tspan class="key">Reviews</tspan>:<tspan class="cc" id="reviews_data_dots"> ........................... </tspan><tspan class="value" id="reviews_data">1,701</tspan>
+<tspan x="318" y="282" class="cc">. </tspan><tspan class="key">Downloads</tspan>:<tspan class="cc" id="downloads_data_dots"> .... </tspan><tspan class="value" id="downloads_data">72K+</tspan> | <tspan class="key">Paid Subs</tspan>:<tspan class="cc" id="paid_data_dots"> ....................... </tspan><tspan class="value" id="paid_data">4K+</tspan>
+<tspan x="318" y="303" class="cc">. </tspan><tspan class="key">Annual Run Rate</tspan>:<tspan class="cc" id="arr_data_dots"> .... </tspan><tspan class="value" id="arr_data">$148K</tspan> | <tspan class="key">Actions</tspan>:<tspan class="cc" id="actions_data_dots"> ................ </tspan><tspan class="value" id="actions_data">248K+</tspan>
+<tspan x="318" y="324" class="cc">. </tspan><tspan class="key">Rating</tspan>:<tspan class="cc" id="rating_data_dots"> .... </tspan><tspan class="value" id="rating_data">4.7</tspan> | <tspan class="key">Reviews</tspan>:<tspan class="cc" id="reviews_data_dots"> ........................... </tspan><tspan class="value" id="reviews_data">1,723</tspan>
 <tspan x="318" y="366">─ Contact</tspan> ─────────────────────────────────────────────────────
 <tspan x="318" y="387" class="cc">. </tspan><tspan class="key">Email</tspan>.<tspan class="key">Work</tspan>:<tspan class="cc"> ........................ </tspan><tspan class="value">kaya@myfutureselfapp.com</tspan>
 <tspan x="318" y="408" class="cc">. </tspan><tspan class="key">Website</tspan>:<tspan class="cc"> ..................................... </tspan><tspan class="value">kayahickin.com</tspan>
 <tspan x="318" y="429" class="cc">. </tspan><tspan class="key">X</tspan>:<tspan class="cc"> .............................................. </tspan><tspan class="value">@KayaHickin</tspan>
 <tspan x="318" y="471">─ GitHub Stats</tspan> ────────────────────────────────────────────────
-<tspan x="318" y="492" class="cc">. </tspan><tspan class="key">Repos</tspan>:<tspan class="cc" id="repo_data_dots"> .... </tspan><tspan class="value" id="repo_data">14</tspan> | <tspan class="key">PRs Merged</tspan>:<tspan class="cc" id="pr_data_dots"> .......................... </tspan><tspan class="value" id="pr_data">2,914</tspan>
-<tspan x="318" y="513" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .... </tspan><tspan class="value" id="contribution_data">15,133</tspan> | <tspan class="key">Followers</tspan>:<tspan class="cc" id="follower_data_dots"> ............. </tspan><tspan class="value" id="follower_data">15</tspan>
-<tspan x="318" y="534" class="cc">. </tspan><tspan class="key">Lines of Code</tspan>:<tspan class="cc" id="loc_data_dots"> ......... </tspan><tspan class="value" id="loc_data">5,391,922</tspan> (<tspan class="addColor" id="loc_add">7,310,511</tspan><tspan class="addColor">++</tspan>, <tspan class="delColor" id="loc_del">1,918,589</tspan><tspan class="delColor">--</tspan>)
+<tspan x="318" y="492" class="cc">. </tspan><tspan class="key">Repos</tspan>:<tspan class="cc" id="repo_data_dots"> .... </tspan><tspan class="value" id="repo_data">14</tspan> | <tspan class="key">PRs Merged</tspan>:<tspan class="cc" id="pr_data_dots"> .......................... </tspan><tspan class="value" id="pr_data">2,921</tspan>
+<tspan x="318" y="513" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .... </tspan><tspan class="value" id="contribution_data">15,231</tspan> | <tspan class="key">Followers</tspan>:<tspan class="cc" id="follower_data_dots"> ............. </tspan><tspan class="value" id="follower_data">15</tspan>
+<tspan x="318" y="534" class="cc">. </tspan><tspan class="key">Lines of Code</tspan>:<tspan class="cc" id="loc_data_dots"> ......... </tspan><tspan class="value" id="loc_data">5,395,402</tspan> (<tspan class="addColor" id="loc_add">7,345,401</tspan><tspan class="addColor">++</tspan>, <tspan class="delColor" id="loc_del">1,949,999</tspan><tspan class="delColor">--</tspan>)
 </text>
 </svg>
