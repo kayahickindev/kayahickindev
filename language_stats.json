@@ -1,11 +1,11 @@
 {
   "languages": [
     {
-      "bytes": 38023997,
+      "bytes": 38124825,
       "name": "Swift"
     },
     {
-      "bytes": 36186874,
+      "bytes": 36199162,
       "name": "TypeScript"
     },
     {
@@ -13,7 +13,7 @@
       "name": "PLpgSQL"
     },
     {
-      "bytes": 14268245,
+      "bytes": 14327993,
       "name": "JavaScript"
     },
     {
@@ -25,11 +25,11 @@
       "name": "Shell"
     },
     {
-      "bytes": 498527,
+      "bytes": 506613,
       "name": "HTML"
     },
     {
-      "bytes": 264398,
+      "bytes": 270867,
       "name": "CSS"
     },
     {
