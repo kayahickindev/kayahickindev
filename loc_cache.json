@@ -1,9 +1,9 @@
 {
   "repositories": {
     "MyFutureSelf/MyFutureSelf": {
-      "additions": 2643303,
-      "deletions": 1270804,
-      "headOid": "19e5814d4a773fbcdc5cc817eed9d4ca63869c08"
+      "additions": 2644977,
+      "deletions": 1270899,
+      "headOid": "1a187baac2cb74d9dcad4c810e0e34436317e471"
     },
     "MyFutureSelf/candidate-skills-assessment": {
       "additions": 363284,
@@ -26,14 +26,14 @@
       "headOid": "fc033b033c62152d40ca48b54eaf59297cc439eb"
     },
     "MyFutureSelf/myfutureself-android": {
-      "additions": 1101581,
-      "deletions": 240436,
-      "headOid": "b465dcdf249484b939ef7bc793a56d5dae45ddba"
+      "additions": 1103567,
+      "deletions": 240541,
+      "headOid": "9e90ea5995aeb6ee3e528684c30ea05af918425b"
     },
     "MyFutureSelf/myfutureself-edu": {
-      "additions": 7700970,
-      "deletions": 2929777,
-      "headOid": "58046a78c2caef420f786cc9a7b3231e0c1b0fff"
+      "additions": 7712873,
+      "deletions": 2936285,
+      "headOid": "1d667829f5c5b1ec6c8f7d583806316ec77a52c7"
     },
     "MyFutureSelf/myfutureself-raise-crm": {
       "additions": 38015,
@@ -81,9 +81,9 @@
       "headOid": "d3b7d471dd69fe1377fc8d49db6755c9a571f280"
     },
     "kayahickindev/kayahickindev": {
-      "additions": 5867,
-      "deletions": 2918,
-      "headOid": "0746cfa256f6b610f84046b35ce54f1e5cb17fb7"
+      "additions": 5883,
+      "deletions": 2928,
+      "headOid": "9b9eae62dd62eab05ea2fbea223a6200b65c1fd9"
     },
     "kayahickindev/leadboost-sites": {
       "additions": 204584,
@@ -91,14 +91,14 @@
       "headOid": "4bfcd479cb43110d6fbccb2077470243f06cf4bf"
     },
     "kayahickindev/mfs-company-brain": {
-      "additions": 1313222,
-      "deletions": 750609,
-      "headOid": "73d9192cba645d33f02f38bd1fe6f02351047103"
+      "additions": 1316998,
+      "deletions": 753264,
+      "headOid": "e2b1c88c9bbfa6e4c06522a29940a01925f9d6c1"
     },
     "kayahickindev/mfs-company-map": {
-      "additions": 145225,
-      "deletions": 116011,
-      "headOid": "ace9286070246b16d512f48607d501546a0cd410"
+      "additions": 145715,
+      "deletions": 116500,
+      "headOid": "8fefc67e559cab436a955bcc013d051019f788e6"
     },
     "kayahickindev/posthog-ios": {
       "additions": 0,
