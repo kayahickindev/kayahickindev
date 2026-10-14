@@ -19,11 +19,11 @@ text, tspan {white-space: pre;}
 <clipPath id="barClip"><rect x="24" y="460" width="652" height="9" rx="4.5"/></clipPath>
 <rect x="24" y="460" width="652" height="9" rx="4.5" fill="#21262d"/>
 <g clip-path="url(#barClip)">
-<rect x="24.00" y="460" width="343.51" height="9" fill="#336790"/>
-<rect x="367.51" y="460" width="121.37" height="9" fill="#3178c6"/>
-<rect x="488.88" y="460" width="93.20" height="9" fill="#F05138"/>
-<rect x="582.08" y="460" width="44.52" height="9" fill="#f1e05a"/>
-<rect x="626.60" y="460" width="27.38" height="9" fill="#e34c26"/>
+<rect x="24.00" y="460" width="343.45" height="9" fill="#336790"/>
+<rect x="367.45" y="460" width="121.35" height="9" fill="#3178c6"/>
+<rect x="488.80" y="460" width="93.18" height="9" fill="#F05138"/>
+<rect x="581.98" y="460" width="44.63" height="9" fill="#f1e05a"/>
+<rect x="626.61" y="460" width="27.37" height="9" fill="#e34c26"/>
 <rect x="653.98" y="460" width="22.02" height="9" fill="#8b949e"/>
 </g>
 <g font-size="11px" fill="#c9d1d9">
@@ -52,10 +52,10 @@ text, tspan {white-space: pre;}
 <tspan x="24" y="239" class="cc">. </tspan><tspan class="key">Rating</tspan>:<tspan class="cc" id="rating_data_dots"> .... </tspan><tspan class="value" id="rating_data">4.6</tspan> | <tspan class="key">Ratings</tspan>:<tspan class="cc" id="reviews_data_dots"> ........................... </tspan><tspan class="value" id="reviews_data">2,068</tspan>
 <tspan x="24" y="262" class="cc">. </tspan><tspan class="key">Product data</tspan>:<tspan class="cc" id="metrics_date_data_dots"> ................................ </tspan><tspan class="value" id="metrics_date_data">2026-10-14 UTC</tspan>
 <tspan x="24" y="308">GitHub</tspan> ────────────────────────────────────────────────────────
-<tspan x="24" y="331" class="cc">. </tspan><tspan class="key">PRs merged</tspan>:<tspan class="cc" id="pr_data_dots"> ........................................... </tspan><tspan class="value" id="pr_data">3,991</tspan>
-<tspan x="24" y="354" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .................................. </tspan><tspan class="value" id="contribution_data">23,372</tspan>
-<tspan x="24" y="377" class="cc">. </tspan><tspan class="key">Lines added</tspan>:<tspan class="cc" id="loc_add_dots"> ..................................... </tspan><tspan class="value" id="loc_add">14,028,739</tspan>
-<tspan x="24" y="400" class="cc">. </tspan><tspan class="key">Lines removed</tspan>:<tspan class="cc" id="loc_del_dots"> .................................... </tspan><tspan class="value" id="loc_del">5,407,958</tspan>
-<tspan x="24" y="423" class="cc">. </tspan><tspan class="key">GitHub data</tspan>:<tspan class="cc" id="github_date_data_dots"> ........................... </tspan><tspan class="value" id="github_date_data">2026-10-14 21:49 UTC</tspan>
+<tspan x="24" y="331" class="cc">. </tspan><tspan class="key">PRs merged</tspan>:<tspan class="cc" id="pr_data_dots"> ........................................... </tspan><tspan class="value" id="pr_data">3,992</tspan>
+<tspan x="24" y="354" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .................................. </tspan><tspan class="value" id="contribution_data">23,380</tspan>
+<tspan x="24" y="377" class="cc">. </tspan><tspan class="key">Lines added</tspan>:<tspan class="cc" id="loc_add_dots"> ..................................... </tspan><tspan class="value" id="loc_add">14,032,409</tspan>
+<tspan x="24" y="400" class="cc">. </tspan><tspan class="key">Lines removed</tspan>:<tspan class="cc" id="loc_del_dots"> .................................... </tspan><tspan class="value" id="loc_del">5,411,015</tspan>
+<tspan x="24" y="423" class="cc">. </tspan><tspan class="key">GitHub data</tspan>:<tspan class="cc" id="github_date_data_dots"> ........................... </tspan><tspan class="value" id="github_date_data">2026-10-14 21:59 UTC</tspan>
 </text>
 </svg>

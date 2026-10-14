@@ -1,6 +1,6 @@
 {
   "metricsGeneratedAt": "2026-10-14T04:15:32.305Z",
-  "refreshedAt": "2026-10-14T21:49:00.663479Z",
+  "refreshedAt": "2026-10-14T21:59:15.716738Z",
   "refreshedOn": "2026-10-14",
-  "trigger": "verified-profile-update"
+  "trigger": "workflow_dispatch"
 }
