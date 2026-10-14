@@ -81,7 +81,7 @@ def gh(path, token, method="GET", body=None):
         req.data = json.dumps(body).encode()
         req.add_header("Content-Type", "application/json")
     try:
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:
             status = resp.status
             data = resp.read()
     except urllib.error.HTTPError as exc:
@@ -89,7 +89,15 @@ def gh(path, token, method="GET", body=None):
             raise
         status = exc.code
         data = exc.read()
-    return status, (json.loads(data) if data else None)
+    try:
+        payload = json.loads(data) if data else None
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        if status not in (500, 502, 503, 504):
+            raise
+        # Gateways can return HTML or plain text. Preserve the HTTP status so
+        # graphql() can retry instead of aborting before its retry loop runs.
+        payload = None
+    return status, payload
 
 
 def graphql(query, variables, token, label):

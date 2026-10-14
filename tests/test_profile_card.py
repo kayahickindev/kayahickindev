@@ -18,6 +18,39 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ProfileCardTests(unittest.TestCase):
+    def test_graphql_retries_non_json_gateway_errors(self):
+        error = urllib.error.HTTPError(
+            "https://api.github.com/graphql", 502, "Bad Gateway", {},
+            io.BytesIO(b"<html>upstream request timeout</html>"),
+        )
+        response = mock.MagicMock()
+        response.__enter__.return_value = response
+        response.status = 200
+        response.read.return_value = b'{"data":{"viewer":{"login":"kayahickindev"}}}'
+        with (
+            mock.patch.object(update_readme.urllib.request, "urlopen",
+                              side_effect=[error, response]) as request,
+            mock.patch.object(update_readme.time, "sleep"),
+        ):
+            result = update_readme.graphql("query { viewer { login } }", {},
+                                           "secret", "profile")
+        self.assertEqual(result["viewer"]["login"], "kayahickindev")
+        self.assertEqual(request.call_count, 2)
+
+    def test_graphql_persistent_gateway_errors_fail_after_bounded_retries(self):
+        errors = [urllib.error.HTTPError(
+            "https://api.github.com/graphql", 502, "Bad Gateway", {},
+            io.BytesIO(b"Bad Gateway"),
+        ) for _ in range(4)]
+        with (
+            mock.patch.object(update_readme.urllib.request, "urlopen",
+                              side_effect=errors) as request,
+            mock.patch.object(update_readme.time, "sleep"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "unavailable: HTTP 502"):
+                update_readme.graphql("query {}", {}, "secret", "profile")
+        self.assertEqual(request.call_count, 4)
+
     def test_github_server_error_is_returned_for_bounded_retry(self):
         error = urllib.error.HTTPError(
             "https://api.github.com/test",
