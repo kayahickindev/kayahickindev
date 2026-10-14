@@ -4,8 +4,8 @@ on:
   repository_dispatch:
     types: [profile-metrics-updated]
   schedule:
-    # Late fallback: the kaya-site workflow normally dispatches this at 06:30 UTC.
-    - cron: "40 23 * * *"
+    # Refresh every six hours, independently of the daily product-snapshot dispatch.
+    - cron: "40 */6 * * *"
   workflow_dispatch:
 
 permissions:
@@ -31,12 +31,11 @@ jobs:
           PROFILE_METRICS_URL: https://kayahickin.com/api/profile-metrics
           PROFILE_SITE_MAX_AGE_HOURS: "48"
           REFRESH_TRIGGER: ${{ github.event_name }}
-          SKIP_IF_REFRESHED_TODAY: ${{ github.event_name == 'schedule' }}
           WRITE_REFRESH_STATE: "1"
         run: python update_readme.py
       - name: Rebuild the cards
-        # Redraws both panels from the committed portrait and the language
-        # totals the refresh just wrote, carrying the fresh stat values over
+        # Redraws both panels from the language totals the refresh just wrote,
+        # carrying the fresh stat values over
         # from dark_mode.svg. Stdlib only, so no install step is needed.
         run: python tools/build_svg.py
       - name: Verify refreshed cards and updater

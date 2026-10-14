@@ -12,8 +12,15 @@ python3 -m unittest discover -s tests
 
 The refresh needs `ACCESS_TOKEN` with private-repository read access.
 Set `REQUIRE_GITHUB_STATS=1` and `WRITE_REFRESH_STATE=1` for a complete refresh.
-The scheduled workflow uses the existing Actions secret and updates daily after
-the personal site's metrics publish, with a late fallback schedule.
+The scheduled workflow uses the existing Actions secret and runs every six hours
+at 00:40, 06:40, 12:40 and 18:40 UTC. The personal site's daily metrics workflow
+also dispatches a refresh when its snapshot is ready. GitHub hosts both workflows;
+they do not depend on a local process or an open conversation. Scheduled runs can
+be delayed by GitHub, so the card's timestamps are the freshness evidence.
+
+Do not enable `SKIP_IF_REFRESHED_TODAY` in the workflow: that legacy daily-fallback
+gate would suppress the remaining refreshes after the first success each day.
+The per-repository cache already avoids recounting unchanged histories.
 
 ## Data and freshness
 

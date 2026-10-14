@@ -1,7 +1,7 @@
 """Refresh the live data baked into dark_mode.svg / light_mode.svg.
 
-Runs after kayahickin.com publishes its daily snapshot, with a late-day
-fallback in GitHub Actions. MyFutureSelf traction comes from the site's public
+Runs every six hours and after kayahickin.com publishes its daily snapshot
+through GitHub Actions. MyFutureSelf traction comes from the site's public
 JSON snapshot; GitHub activity comes from the GitHub API.
 The workflow requires an ACCESS_TOKEN with private-repo read access so that the
 GitHub and lines-of-code totals cannot silently degrade to public-only data.

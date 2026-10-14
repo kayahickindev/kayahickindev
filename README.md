@@ -4,7 +4,7 @@
   <img src="dark_mode.svg" alt="MyFutureSelf product metrics and GitHub engineering activity, with source timestamps." width="700">
 </picture>
 
-Updated daily from [product metrics](https://kayahickin.com/api/profile-metrics) and GitHub. Lines count authored changes on default branches, including private repos.
+Refreshed every six hours from [product metrics](https://kayahickin.com/api/profile-metrics) and GitHub. Product metrics publish daily. Lines count authored changes on default branches, including private repos.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/kayahickindev/kayahickindev/output/github-snake-dark.svg">
