@@ -1,9 +1,9 @@
 {
   "repositories": {
     "MyFutureSelf/MyFutureSelf": {
-      "additions": 2199434,
-      "deletions": 1091857,
-      "headOid": "6d93548f939facfe473630df80ebbbdefe81cfa0"
+      "additions": 2641878,
+      "deletions": 1270686,
+      "headOid": "d680c13776f2b69011f9a61fdf3664a8c7eb16f1"
     },
     "MyFutureSelf/candidate-skills-assessment": {
       "additions": 363284,
@@ -11,19 +11,14 @@
       "headOid": "2ddbd117cb31a4fc6fd5bb25003fa85e5aba40c6"
     },
     "MyFutureSelf/mfs-business-automation": {
-      "additions": 9213,
-      "deletions": 754,
-      "headOid": "61ce2db8b0989c8f2979ca430a5d9c44dc74ca24"
+      "additions": 9215,
+      "deletions": 756,
+      "headOid": "97c3a2ae79dd2a572029048fb206a7d2b669e8ca"
     },
     "MyFutureSelf/mfs-competitors": {
       "additions": 246,
       "deletions": 5,
       "headOid": "aebdd1b123e0443f0b9f3cd370f3278a70d3a226"
-    },
-    "MyFutureSelf/mfs-miamiuniversity": {
-      "additions": 3056477,
-      "deletions": 370538,
-      "headOid": "ed5b49fab741c13a584d8f0e86476e667077f1ca"
     },
     "MyFutureSelf/mfs-preseed-deck": {
       "additions": 3383,
@@ -31,19 +26,24 @@
       "headOid": "fc033b033c62152d40ca48b54eaf59297cc439eb"
     },
     "MyFutureSelf/myfutureself-android": {
-      "additions": 855062,
-      "deletions": 192053,
-      "headOid": "4ed7e9a4a178d215ceff341eff05ba6a9f79a764"
+      "additions": 1101581,
+      "deletions": 240436,
+      "headOid": "b465dcdf249484b939ef7bc793a56d5dae45ddba"
+    },
+    "MyFutureSelf/myfutureself-edu": {
+      "additions": 7700970,
+      "deletions": 2929777,
+      "headOid": "58046a78c2caef420f786cc9a7b3231e0c1b0fff"
     },
     "MyFutureSelf/myfutureself-raise-crm": {
-      "additions": 23114,
-      "deletions": 5016,
-      "headOid": "d10d64fb2fd0c5b61a2cd00894f754a77e10a1d3"
+      "additions": 38015,
+      "deletions": 6932,
+      "headOid": "941905274f2137532c5111fe62c7462baba81011"
     },
     "MyFutureSelf/myfutureself-website": {
-      "additions": 35370,
-      "deletions": 5961,
-      "headOid": "ba411fd2ac5c5fccb58a4485cab873d98e57b808"
+      "additions": 57268,
+      "deletions": 8935,
+      "headOid": "bdc5c0cf330c116f98a5edfe5245c2b259ffdf48"
     },
     "MyFutureSelf/viral-loop-dashboard": {
       "additions": 55819,
@@ -56,9 +56,9 @@
       "headOid": "02ecbe6200af8a2410e22b5c467914431db00908"
     },
     "kayahickindev/NotchLimits": {
-      "additions": 312,
-      "deletions": 25,
-      "headOid": "ae6f4eb1eb4c050572cf17bcd1eae4d24c73ff5b"
+      "additions": 517,
+      "deletions": 73,
+      "headOid": "40e8eb0d57d2d35ccee3077ec8f0053e54b3bd0d"
     },
     "kayahickindev/ai-conversation-judge": {
       "additions": 3413,
@@ -71,29 +71,34 @@
       "headOid": "e311f231f9c974358b8124cb1185184b5f8361a9"
     },
     "kayahickindev/claude-swap-tiered": {
-      "additions": 1170,
-      "deletions": 88,
-      "headOid": "1d95ae2f71aee16d1110519450548a345254e836"
+      "additions": 1342,
+      "deletions": 98,
+      "headOid": "8ec7bf7aa8e8979e1e34d207856993598d72686d"
     },
     "kayahickindev/kaya-site": {
-      "additions": 23117,
-      "deletions": 11644,
-      "headOid": "988ec4ec0e56b51b6c33c50dedaf357fc012a428"
+      "additions": 28909,
+      "deletions": 16059,
+      "headOid": "d3b7d471dd69fe1377fc8d49db6755c9a571f280"
     },
     "kayahickindev/kayahickindev": {
       "additions": 5456,
       "deletions": 1654,
-      "headOid": "b28c451f9be57dc34a72c5388e71de166d955614"
+      "headOid": "ad0cca0a2e78c19a43e597fef9129fcd4b96027a"
+    },
+    "kayahickindev/leadboost-sites": {
+      "additions": 204584,
+      "deletions": 1625,
+      "headOid": "4bfcd479cb43110d6fbccb2077470243f06cf4bf"
     },
     "kayahickindev/mfs-company-brain": {
-      "additions": 414805,
-      "deletions": 225166,
-      "headOid": "dd79b83b319f8ebc266db67e7196add132413010"
+      "additions": 1311568,
+      "deletions": 749041,
+      "headOid": "26c0a7265ad29dea2bcb96a2860533cc9b68f272"
     },
     "kayahickindev/mfs-company-map": {
-      "additions": 15508,
-      "deletions": 7655,
-      "headOid": "546464f9cde5f25b18700c038f6eac1a1e283824"
+      "additions": 145045,
+      "deletions": 115904,
+      "headOid": "ddd9d5dd04482bb8834dcdb5b0152b496f81b0df"
     },
     "kayahickindev/posthog-ios": {
       "additions": 0,
@@ -119,6 +124,11 @@
       "additions": 40493,
       "deletions": 19167,
       "headOid": "b8d44a1f395bc16642567fdd2299dd292c275410"
+    },
+    "kayahickindev/tax-autopilot": {
+      "additions": 7787,
+      "deletions": 70,
+      "headOid": "bcf5d79262ea9c31f186cd6a6a71cf6036fcad59"
     }
   },
   "version": 1

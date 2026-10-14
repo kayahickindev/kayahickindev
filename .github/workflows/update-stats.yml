@@ -18,7 +18,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
@@ -39,6 +39,8 @@ jobs:
         # totals the refresh just wrote, carrying the fresh stat values over
         # from dark_mode.svg. Stdlib only, so no install step is needed.
         run: python tools/build_svg.py
+      - name: Verify refreshed cards and updater
+        run: python -m unittest discover -s tests
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"

@@ -8,26 +8,19 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 
-CARD_W, CARD_H = 985, 545
+CARD_W, CARD_H = 700, 535
 
-# ---- left column: portrait, language bar, legend ----
-COLS, ROWS = 430, 412
-ART_X, ART_Y0 = 15, 24
-ART_FS, ART_ADVANCE, ART_LINE_H = 1, 0.6, 1.0
-ART_W = COLS * ART_ADVANCE
-
-BAR_X, BAR_Y, BAR_W, BAR_H = ART_X, 462, 260, 9
-LEGEND_FS = 10.5
-LEGEND_COLS = (ART_X, ART_X + 135)
-LEGEND_ROWS = (492, 512, 532)
-LEGEND_SLOTS = len(LEGEND_COLS) * len(LEGEND_ROWS)
-
-# ---- right column: the terminal readout ----
-WIDTH = 63  # right-column line width in chars
-X_RIGHT = 318
+# Full-width terminal readout. Identity and contact details live in the sidebar.
+WIDTH = 63
+X_RIGHT = 24
 FS = 17
-LINE_H = 21
-Y0 = 30
+LINE_H = 23
+Y0 = 32
+BAR_X, BAR_Y, BAR_W, BAR_H = 24, 460, 652, 9
+LEGEND_FS = 11
+LEGEND_COLS = (24, 247, 470)
+LEGEND_ROWS = (495, 518)
+LEGEND_SLOTS = len(LEGEND_COLS) * len(LEGEND_ROWS)
 
 # GitHub linguist colours, so the bar matches what each repo page shows.
 LANGUAGE_COLORS = {
@@ -42,19 +35,10 @@ LANGUAGE_COLORS = {
 OTHER_COLOR = "#8b949e"
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--art-dark", type=Path, default=HERE / "ascii_art_dark.txt")
-parser.add_argument("--art-light", type=Path, default=HERE / "ascii_art_light.txt")
 parser.add_argument("--output-dir", type=Path, default=ROOT)
 parser.add_argument("--stats-from", type=Path, default=ROOT / "dark_mode.svg")
 parser.add_argument("--languages", type=Path, default=ROOT / "language_stats.json")
 args = parser.parse_args()
-
-def read_art(path):
-    lines = path.read_text(encoding="utf-8").splitlines()
-    assert len(lines) <= ROWS, (path, len(lines))
-    assert max(len(line) for line in lines) <= COLS, (path, max(map(len, lines)))
-    return lines + [""] * (ROWS - len(lines))
-
 
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -63,45 +47,29 @@ def esc(s):
 # ---- palettes ----
 DARK = dict(bg="#161b22", fg="#c9d1d9", art="#8b949e", key="#ffa657",
             value="#a5d6ff", add="#3fb950", dele="#f85149", cc="#616e7f",
-            track="#21262d", art_source=args.art_dark)
+            track="#21262d")
 LIGHT = dict(bg="#fffefe", fg="#24292f", art="#57606a", key="#953800",
              value="#0a3069", add="#1a7f37", dele="#cf222e", cc="#6e7781",
-             track="#eaeef2", art_source=args.art_light)
+             track="#eaeef2")
 
 # ---- right-column content ----
-STATS = {
-    "age": "22 years, 5 months, 21 days",
-    "downloads": "30K+", "paid": "2,737+",
-    "arr": "$113K+", "actions": "163K+",
-    "rating": "4.7", "reviews": "973",
-    "repos": "10", "prs": "591",
-    "contributions": "4,360", "followers": "9",
-    "loc": "1,173,763", "loc_add": "1,978,907", "loc_del": "805,144",
-}
-
-# Rebuilding the card should preserve the most recently refreshed dynamic
-# values instead of resetting them to the fallback snapshot above.
 ID_TO_STAT = {
-    "age_data": "age",
-    "downloads_data": "downloads",
-    "paid_data": "paid",
-    "arr_data": "arr",
-    "actions_data": "actions",
-    "rating_data": "rating",
-    "reviews_data": "reviews",
-    "repo_data": "repos",
-    "pr_data": "prs",
-    "contribution_data": "contributions",
-    "follower_data": "followers",
-    "loc_data": "loc",
-    "loc_add": "loc_add",
-    "loc_del": "loc_del",
+    "downloads_data": "downloads", "paid_data": "paid",
+    "arr_data": "arr", "actions_data": "actions",
+    "rating_data": "rating", "reviews_data": "reviews",
+    "pr_data": "prs", "contribution_data": "contributions",
+    "loc_add": "loc_add", "loc_del": "loc_del",
+    "metrics_date_data": "metrics_date", "github_date_data": "github_date",
 }
-if args.stats_from.exists():
-    for element in ET.parse(args.stats_from).getroot().iter():
-        stat = ID_TO_STAT.get(element.attrib.get("id"))
-        if stat and element.text:
-            STATS[stat] = element.text
+STATS = {}
+for element in ET.parse(args.stats_from).getroot().iter():
+    stat = ID_TO_STAT.get(element.attrib.get("id"))
+    if stat and element.text:
+        STATS[stat] = element.text
+
+missing = set(ID_TO_STAT.values()) - STATS.keys()
+if missing:
+    raise RuntimeError(f"Refresh profile data before building: missing {sorted(missing)}")
 
 
 def load_languages(path):
@@ -186,60 +154,29 @@ def line_kv2(n1, v1, id1, n2, v2, id2):
     return kv([(k1, l1, esc(v1), len(v1), id1), (k2, l2, esc(v2), len(v2), id2)])
 
 
-LOC_LABEL = "Lines of Code"
-
-
-def loc_line():
-    k = f'<tspan class="key">{LOC_LABEL}</tspan>' 
-    tail = (f'<tspan class="value" id="loc_data">{STATS["loc"]}</tspan> '
-            f'(<tspan class="addColor" id="loc_add">{STATS["loc_add"]}</tspan>'
-            f'<tspan class="addColor">++</tspan>, '
-            f'<tspan class="delColor" id="loc_del">{STATS["loc_del"]}</tspan>'
-            f'<tspan class="delColor">--</tspan>)')
-    tail_len = (len(STATS["loc"]) + 2 + len(STATS["loc_add"]) + 4
-                + len(STATS["loc_del"]) + 3)
-    fixed = 2 + len(LOC_LABEL) + 1 + 2 + tail_len
-    dots = WIDTH - fixed
-    # Silently clamping here is what pushed the old card's widest line two
-    # characters past the panel, so the totals were clipped off the right edge.
-    assert dots >= 1, f"lines-of-code row needs {fixed + 1} columns, have {WIDTH}"
-    return (f'<tspan x="{X_RIGHT}" y="{{y}}" class="cc">. </tspan>{k}:'
-            f'<tspan class="cc" id="loc_data_dots"> {"." * dots} </tspan>{tail}')
-
-
 rows = [
-    header("kaya@myfutureself"),
-    line_kv("Role", "Co-founder & CTO"),
-    line_kv("Location", "Cleveland, OH"),
-    line_kv("Uptime", STATS["age"], "age_data"),
-    line_kv("Company", "MyFutureSelf, Inc."),
-    line_kv("Focus", "consumer AI, behavior change, voice"),
+    header("Engineering"),
+    line_kv("Platforms", "iOS, Android, Web"),
+    line_kv("Languages", "Swift, TypeScript, Python"),
+    line_kv("Frameworks", "SwiftUI, React Native, Next.js"),
     line_kv("Toolchain", "Claude Code, Codex, Ghostty, OpenClaw"),
     None,
-    line_kv("Stack.Languages", "Swift, TypeScript"),
-    line_kv("Stack.Frameworks", "SwiftUI, Next.js, Firebase"),
-    None,
-    header("─ MyFutureSelf"),
+    header("MyFutureSelf"),
     line_kv2("Downloads", STATS["downloads"], "downloads_data",
-             "Paid Subs", STATS["paid"], "paid_data"),
-    line_kv2("Annual Run Rate", STATS["arr"], "arr_data",
+             "Paid subscriptions", STATS["paid"], "paid_data"),
+    line_kv2("ARR", STATS["arr"], "arr_data",
              "Actions", STATS["actions"], "actions_data"),
     line_kv2("Rating", STATS["rating"], "rating_data",
-             "Reviews", STATS["reviews"], "reviews_data"),
+             "Ratings", STATS["reviews"], "reviews_data"),
+    line_kv("Product data", STATS["metrics_date"], "metrics_date_data"),
     None,
-    header("─ Contact"),
-    line_kv("Email.Work", "kaya@myfutureselfapp.com"),
-    line_kv("Website", "kayahickin.com"),
-    line_kv("X", "@KayaHickin"),
-    None,
-    header("─ GitHub Stats"),
-    line_kv2("Repos", STATS["repos"], "repo_data",
-             "PRs Merged", STATS["prs"], "pr_data"),
-    line_kv2("Contributions (1y)", STATS["contributions"], "contribution_data",
-             "Followers", STATS["followers"], "follower_data"),
-    loc_line(),
+    header("GitHub"),
+    line_kv("PRs merged", STATS["prs"], "pr_data"),
+    line_kv("Contributions (1y)", STATS["contributions"], "contribution_data"),
+    line_kv("Lines added", STATS["loc_add"], "loc_add"),
+    line_kv("Lines removed", STATS["loc_del"], "loc_del"),
+    line_kv("GitHub data", STATS["github_date"], "github_date_data"),
 ]
-assert len(rows) == 25, len(rows)
 
 
 def language_markup(pal):
@@ -297,13 +234,6 @@ size-adjust: 109%;
 text, tspan {{white-space: pre;}}
 </style>""")
     out.append(f'<rect width="{CARD_W}px" height="{CARD_H}px" fill="{pal["bg"]}" rx="15"/>')
-    art_lines = read_art(pal["art_source"])
-    out.append(f'<text x="{ART_X}" y="{ART_Y0}" fill="{pal["art"]}" '
-               f'font-size="{ART_FS}px" class="ascii">')
-    for i in range(ROWS):
-        y = ART_Y0 + i * ART_LINE_H
-        out.append(f'<tspan x="{ART_X}" y="{y}">{esc(art_lines[i])}</tspan>')
-    out.append("</text>")
     out.extend(language_markup(pal))
     out.append(f'<text x="{X_RIGHT}" y="{Y0}" fill="{pal["fg"]}">')
     for i, row in enumerate(rows):
@@ -321,12 +251,11 @@ for filename, palette in (("dark_mode.svg", DARK), ("light_mode.svg", LIGHT)):
     (args.output_dir / filename).write_text(build(palette), encoding="utf-8")
 print(f"wrote {args.output_dir / 'dark_mode.svg'}, {args.output_dir / 'light_mode.svg'}")
 
-# sanity: the portrait, the language block and the readout must all stay inside
-# the card, and every right-column line must end on the same column.
-assert ART_X + ART_W <= X_RIGHT, (ART_X + ART_W, X_RIGHT)
-assert X_RIGHT + WIDTH * (FS * 0.6) <= CARD_W, X_RIGHT + WIDTH * (FS * 0.6)
-assert ART_Y0 + (ROWS - 1) * ART_LINE_H < BAR_Y, BAR_Y
-assert max(LEGEND_ROWS) < CARD_H and Y0 + 24 * LINE_H < CARD_H
+# All content stays inside the card; readout rows end on the same column.
+assert X_RIGHT + WIDTH * (FS * 0.6) <= CARD_W
+assert BAR_X + BAR_W <= CARD_W
+assert max(LEGEND_ROWS) < CARD_H
+assert Y0 + (len(rows) - 1) * LINE_H < BAR_Y
 plain = re.compile(r"<[^>]+>")
 for i, row in enumerate(rows):
     if row is None:

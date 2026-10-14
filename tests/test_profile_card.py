@@ -60,19 +60,29 @@ class ProfileCardTests(unittest.TestCase):
             io.BytesIO(b'{"message":"try again"}'),
         )
         with mock.patch.object(update_readme.urllib.request, "urlopen", side_effect=error):
-            status, body = update_readme.gh("/test", "secret")
+            status, body = update_readme.gh("/graphql", "secret")
 
         self.assertEqual(status, 500)
         self.assertEqual(body, {"message": "try again"})
+
+    def test_language_gateway_failure_cannot_look_like_an_empty_repository(self):
+        error = urllib.error.HTTPError(
+            "https://api.github.com/repos/owner/repo/languages", 502,
+            "Bad Gateway", {}, io.BytesIO(b"Bad Gateway"),
+        )
+        with mock.patch.object(update_readme.urllib.request, "urlopen", side_effect=error):
+            with self.assertRaisesRegex(RuntimeError, "unavailable: HTTP 502"):
+                update_readme.gh("/repos/owner/repo/languages", "secret")
 
     def test_generated_svgs_have_expected_dynamic_fields(self):
         for name in ("dark_mode.svg", "light_mode.svg"):
             path = ROOT / name
             ET.parse(path)
             svg = path.read_text(encoding="utf-8")
-            self.assertIn("Co-founder &amp; CTO", svg)
-            self.assertIn("Cleveland, OH", svg)
             self.assertIn("Claude Code, Codex, Ghostty, OpenClaw", svg)
+            for duplicate in ("Co-founder", "Cleveland", "Email.Work", "Website",
+                              "@KayaHickin", "Followers", 'class="ascii"'):
+                self.assertNotIn(duplicate, svg)
             self.assertIn('id="downloads_data"', svg)
             self.assertIn('id="paid_data"', svg)
             self.assertIn('id="arr_data"', svg)
@@ -96,6 +106,7 @@ class ProfileCardTests(unittest.TestCase):
                 "appStoreReviews": {"raw": 973},
                 "futureSelfActions": {"raw": 163363},
                 "coachingValueDelivered": {"raw": 10618595},
+                "paidSubscribers": {"raw": 2737, "label": "Paid Subscriptions"},
                 "paidSubscribersEver": {
                     "display": "2.7K+",
                     "label": "Active Paid Subscribers",
@@ -112,10 +123,10 @@ class ProfileCardTests(unittest.TestCase):
             values, generated_at = update_readme.fetch_site_stats(now=now)
 
         self.assertEqual(generated_at, "2026-07-14T04:15:41.262Z")
-        self.assertEqual(values["downloads_data"], "30K+")
-        self.assertEqual(values["paid_data"], "2.7K+")
+        self.assertEqual(values["downloads_data"], "30,000")
+        self.assertEqual(values["paid_data"], "2,737")
         self.assertEqual(values["arr_data"], "$113K+")
-        self.assertEqual(values["actions_data"], "163K+")
+        self.assertEqual(values["actions_data"], "163,363")
         self.assertEqual(values["rating_data"], "4.7")
         self.assertEqual(values["reviews_data"], "973")
 
@@ -151,29 +162,10 @@ class ProfileCardTests(unittest.TestCase):
             head = max(1, round(len(lines) * 0.08))
             self.assertTrue(any(lines[:head]), polarity)
 
-    def test_each_panel_carries_its_own_portrait_polarity(self):
-        """Ink is halftone density, so it has to follow the panel behind it.
-
-        Shipping one portrait to both panels renders the light card as a
-        photographic negative of the dark one.
-        """
-        dark_art = (ROOT / "tools" / "ascii_art_dark.txt").read_text(encoding="utf-8")
-        light_art = (ROOT / "tools" / "ascii_art_light.txt").read_text(encoding="utf-8")
-        self.assertNotEqual(dark_art.strip(), light_art.strip())
-
-        def art_block(name):
-            svg = (ROOT / name).read_text(encoding="utf-8")
-            return svg[svg.index('class="ascii"') : svg.index("</text>")]
-
-        for name, art in (("dark_mode.svg", dark_art), ("light_mode.svg", light_art)):
-            block = art_block(name)
-            for line in sorted(art.splitlines(), key=len)[-3:]:
-                self.assertIn(line, block, name)
-
     def test_cards_scale_instead_of_clipping(self):
         for name in ("dark_mode.svg", "light_mode.svg"):
             root = ET.parse(ROOT / name).getroot()
-            self.assertEqual(root.attrib.get("viewBox"), "0 0 985 545", name)
+            self.assertEqual(root.attrib.get("viewBox"), "0 0 700 535", name)
 
     def test_language_bar_segments_fill_the_track(self):
         totals = json.loads(
@@ -185,11 +177,11 @@ class ProfileCardTests(unittest.TestCase):
             self.assertIn('clip-path="url(#barClip)"', svg)
             group = svg.split('<g clip-path="url(#barClip)">')[1].split("</g>")[0]
             segments = re.findall(
-                r'<rect x="([\d.]+)" y="462" width="([\d.]+)"', group
+                r'<rect x="([\d.]+)" y="460" width="([\d.]+)"', group
             )
             self.assertGreaterEqual(len(segments), 2, name)
             covered = sum(float(width) for _, width in segments)
-            self.assertAlmostEqual(covered, 260.0, delta=0.5, msg=name)
+            self.assertAlmostEqual(covered, 652.0, delta=0.5, msg=name)
             self.assertIn(totals["languages"][0]["name"], svg, name)
 
     def test_widest_readout_line_stays_inside_the_card(self):
@@ -200,11 +192,11 @@ class ProfileCardTests(unittest.TestCase):
         """
         for name in ("dark_mode.svg", "light_mode.svg"):
             svg = (ROOT / name).read_text(encoding="utf-8")
-            rows = re.findall(r'<tspan x="318" y="(\d+)" class="cc">\. </tspan>', svg)
+            rows = re.findall(r'<tspan x="24" y="(\d+)" class="cc">\. </tspan>', svg)
             self.assertTrue(rows)
             for row_y in rows:
-                line = svg.split(f'<tspan x="318" y="{row_y}" class="cc">. </tspan>')[1]
-                line = line.split('<tspan x="318" y=')[0]
+                line = svg.split(f'<tspan x="24" y="{row_y}" class="cc">. </tspan>')[1]
+                line = line.split('<tspan x="24" y=')[0]
                 text = re.sub(r"<[^>]+>", "", line).replace("\n", "")
                 text = (text.replace("&amp;", "&").replace("&lt;", "<")
                         .replace("&gt;", ">"))
@@ -224,12 +216,6 @@ class ProfileCardTests(unittest.TestCase):
             )
             rebuilt = (Path(directory) / "dark_mode.svg").read_text(encoding="utf-8")
         self.assertEqual(rebuilt, (ROOT / "dark_mode.svg").read_text(encoding="utf-8"))
-
-    def test_uptime_handles_month_boundary(self):
-        self.assertEqual(
-            update_readme.uptime_string(date(2026, 3, 1)),
-            "22 years, 1 month, 10 days",
-        )
 
     def test_calendar_total_is_used_without_contributed_repo_count(self):
         graphql_queries = []
@@ -503,6 +489,62 @@ class ProfileCardTests(unittest.TestCase):
         self.assertEqual(result[:2], (120, 20))
         fetch_repo_loc.assert_not_called()
 
+    def test_history_timeout_reduces_page_size_without_recounting_prior_page(self):
+        def page(additions, deletions, cursor):
+            return {"repository": {"defaultBranchRef": {"target": {"history": {
+                "nodes": [{"additions": additions, "deletions": deletions,
+                           "parents": {"totalCount": 1}}],
+                "pageInfo": {"hasNextPage": cursor is not None, "endCursor": cursor},
+            }}}}}
+
+        with mock.patch.object(update_readme, "graphql", side_effect=[
+            page(20, 5, "next"),
+            RuntimeError("GitHub GraphQL history unavailable: HTTP 502"),
+            page(8, 3, None),
+        ]) as query:
+            result = update_readme.fetch_repo_loc("owner/repo", "U_1", "secret")
+        self.assertEqual(result, (28, 8))
+        variables = [call.args[1] for call in query.call_args_list]
+        self.assertEqual([v["pageSize"] for v in variables], [25, 25, 5])
+        self.assertEqual([v["cursor"] for v in variables], [None, "next", "next"])
+
+    def test_completed_repository_is_cached_when_later_repository_fails(self):
+        summary = {
+            "user": {"id": "U_1", "contributionsCollection": {
+                "startedAt": "start", "endedAt": "end",
+                "contributionCalendar": {"totalContributions": 10},
+            }},
+            "viewer": {"repositoriesContributedTo": {"nodes": []}},
+        }
+
+        def fake_gh(path, _token):
+            if path == "/user":
+                return 200, {"followers": 9}
+            if path.startswith("/user/repos"):
+                return 200, [{"full_name": "owner/first"}, {"full_name": "owner/second"}]
+            if path.startswith("/search/issues"):
+                return 200, {"total_count": 10}
+            if path.endswith("/languages"):
+                return 200, {"Python": 100}
+            raise AssertionError(path)
+
+        with tempfile.TemporaryDirectory() as directory:
+            cache_path = Path(directory) / "loc.json"
+            with (
+                mock.patch.object(update_readme, "gh", side_effect=fake_gh),
+                mock.patch.object(update_readme, "graphql", return_value=summary),
+                mock.patch.object(update_readme, "fetch_repo_head", return_value="head"),
+                mock.patch.object(update_readme, "fetch_repo_loc", side_effect=[
+                    (120, 20), RuntimeError("history unavailable"),
+                ]),
+            ):
+                with self.assertRaisesRegex(RuntimeError, "history unavailable"):
+                    update_readme.fetch_stats("secret", loc_cache_path=cache_path)
+            cache = update_readme.load_loc_cache(cache_path)
+        self.assertEqual(cache, {"owner/first": {
+            "headOid": "head", "additions": 120, "deletions": 20,
+        }})
+
     def test_changed_repository_refreshes_cached_loc(self):
         cache = {
             "kayahickindev/example": {
@@ -555,13 +597,13 @@ class ProfileCardTests(unittest.TestCase):
                 {
                     "paid_data": "12,345+",
                     "contribution_data": "12,345",
-                    "follower_data": "10",
+                    "metrics_date_data": "2026-10-14 UTC",
                 },
             )
             svg = target.read_text(encoding="utf-8")
             self.assertIn('id="paid_data">12,345+</tspan>', svg)
             self.assertIn('id="contribution_data">12,345</tspan>', svg)
-            self.assertIn('id="follower_data">10</tspan>', svg)
+            self.assertIn('id="metrics_date_data">2026-10-14 UTC</tspan>', svg)
             ET.parse(target)
 
 

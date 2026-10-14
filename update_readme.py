@@ -19,7 +19,6 @@ import urllib.error
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
 
-BIRTHDATE = date(2004, 1, 19)
 LOGIN = "kayahickindev"
 SVGS = ["dark_mode.svg", "light_mode.svg"]
 API = "https://api.github.com"
@@ -38,39 +37,22 @@ REQUIRED_RAW_SITE_METRICS = (
     "appStoreRating",
     "appStoreReviews",
     "futureSelfActions",
+    "paidSubscribers",
 )
-REQUIRED_DISPLAY_SITE_METRICS = ("paidSubscribersEver", "arr")
+REQUIRED_DISPLAY_SITE_METRICS = ("arr",)
 
 # value ids on one line -> the dots tspan that absorbs their length changes
 LINE_GROUPS = [
-    (("age_data",), "age_data_dots"),
     (("downloads_data", "paid_data"), "paid_data_dots"),
     (("arr_data", "actions_data"), "actions_data_dots"),
     (("rating_data", "reviews_data"), "reviews_data_dots"),
-    (("repo_data", "pr_data"), "pr_data_dots"),
-    (("contribution_data", "follower_data"), "follower_data_dots"),
-    (("loc_data", "loc_add", "loc_del"), "loc_data_dots"),
+    (("pr_data",), "pr_data_dots"),
+    (("contribution_data",), "contribution_data_dots"),
+    (("loc_add",), "loc_add_dots"),
+    (("loc_del",), "loc_del_dots"),
+    (("metrics_date_data",), "metrics_date_data_dots"),
+    (("github_date_data",), "github_date_data_dots"),
 ]
-
-
-def uptime_string(today=None):
-    today = today or date.today()
-    y = today.year - BIRTHDATE.year
-    m = today.month - BIRTHDATE.month
-    d = today.day - BIRTHDATE.day
-    if d < 0:
-        m -= 1
-        prev_month = (today.month - 1) or 12
-        prev_year = today.year if today.month > 1 else today.year - 1
-        days_in_prev = (date(prev_year + (prev_month == 12), prev_month % 12 + 1, 1)
-                        - date(prev_year, prev_month, 1)).days
-        d += days_in_prev
-    if m < 0:
-        y -= 1
-        m += 12
-    def plural(n, unit):
-        return f"{n} {unit}" + ("" if n == 1 else "s")
-    return f"{plural(y, 'year')}, {plural(m, 'month')}, {plural(d, 'day')}"
 
 
 def gh(path, token, method="GET", body=None):
@@ -89,6 +71,10 @@ def gh(path, token, method="GET", body=None):
             raise
         status = exc.code
         data = exc.read()
+    if status >= 500 and path != "/graphql":
+        # REST callers expect complete results. In particular, a failed
+        # languages request must never look like an empty code repository.
+        raise RuntimeError(f"GitHub {path} unavailable: HTTP {status}")
     try:
         payload = json.loads(data) if data else None
     except (json.JSONDecodeError, UnicodeDecodeError):
@@ -137,10 +123,6 @@ def fetch_json_url(url):
             raise RuntimeError("profile metrics endpoint returned invalid JSON") from exc
 
 
-def compact_thousands(value):
-    return f"{round(value / 1000):,}K+"
-
-
 def fetch_site_stats(url=METRICS_URL, now=None):
     snapshot = fetch_json_url(url)
     if not isinstance(snapshot, dict) or not isinstance(snapshot.get("metrics"), dict):
@@ -183,12 +165,13 @@ def fetch_site_stats(url=METRICS_URL, now=None):
         display(name)
 
     values = {
-        "downloads_data": compact_thousands(raw("appDownloads")),
-        "paid_data": display("paidSubscribersEver"),
+        "downloads_data": f'{raw("appDownloads"):,.0f}',
+        "paid_data": f'{raw("paidSubscribers"):,.0f}',
         "arr_data": display("arr"),
-        "actions_data": compact_thousands(raw("futureSelfActions")),
+        "actions_data": f'{raw("futureSelfActions"):,.0f}',
         "rating_data": f'{raw("appStoreRating"):.1f}',
         "reviews_data": f'{round(raw("appStoreReviews")):,}',
+        "metrics_date_data": generated.astimezone(timezone.utc).strftime("%Y-%m-%d UTC"),
     }
     print(f"profile metrics: generatedAt={generated_at}")
     return values, generated_at
@@ -267,31 +250,41 @@ def fetch_repo_loc(name, author_id, token):
     owner, repo_name = name.split("/", 1)
     adds = dels = 0
     cursor = None
+    page_size = 25
     while True:
-        data = graphql("""
-          query($owner: String!, $name: String!, $author: ID!, $cursor: String) {
-            repository(owner: $owner, name: $name) {
-              defaultBranchRef {
-                target {
-                  ... on Commit {
-                    history(first: 100, after: $cursor, author: {id: $author}) {
-                      nodes {
-                        additions
-                        deletions
-                        parents(first: 2) { totalCount }
+        try:
+            data = graphql("""
+              query($owner: String!, $name: String!, $author: ID!, $cursor: String, $pageSize: Int!) {
+                repository(owner: $owner, name: $name) {
+                  defaultBranchRef {
+                    target {
+                      ... on Commit {
+                        history(first: $pageSize, after: $cursor, author: {id: $author}) {
+                          nodes {
+                            additions
+                            deletions
+                            parents(first: 2) { totalCount }
+                          }
+                          pageInfo { hasNextPage endCursor }
+                        }
                       }
-                      pageInfo { hasNextPage endCursor }
                     }
                   }
                 }
-              }
-            }
-          }""", {
-            "owner": owner,
-            "name": repo_name,
-            "author": author_id,
-            "cursor": cursor,
-        }, token, f"commit history for {name}")
+              }""", {
+                "owner": owner,
+                "name": repo_name,
+                "author": author_id,
+                "cursor": cursor,
+                "pageSize": page_size,
+            }, token, f"commit history for {name}")
+        except RuntimeError as exc:
+            if page_size > 1 and "unavailable: HTTP 50" in str(exc):
+                page_size = max(1, page_size // 5)
+                print(f"Reducing {name} commit-history page to {page_size} commits")
+                continue
+            raise
+        page_size = 25
         repository = data.get("repository")
         default_ref = repository.get("defaultBranchRef") if repository else None
         if not default_ref:
@@ -400,6 +393,9 @@ def fetch_stats(token, loc_cache_path=None, language_stats_path=None):
             continue
         repo_adds, repo_dels, cache_entry = repo_loc
         refreshed_cache[name] = cache_entry
+        # Checkpoint only complete repository totals. A later failure still
+        # aborts card publication, but the next attempt can reuse this work.
+        save_loc_cache(loc_cache_path, {**loc_cache, **refreshed_cache})
         adds += repo_adds
         dels += repo_dels
 
@@ -476,7 +472,7 @@ def main():
         print("combined website/profile refresh already completed today; skipping fallback")
         return 0
 
-    values = {"age_data": uptime_string()}
+    values = {}
     site_values, metrics_generated_at = fetch_site_stats()
     values.update(site_values)
     token = os.environ.get("ACCESS_TOKEN")
@@ -484,6 +480,7 @@ def main():
         stats = fetch_stats(token, LOC_CACHE_PATH, LANGUAGE_STATS_PATH)
         if stats:
             values.update(stats)
+            values["github_date_data"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     elif os.environ.get("REQUIRE_GITHUB_STATS") == "1":
         raise RuntimeError("ACCESS_TOKEN is required for complete GitHub and LOC stats")
     else:

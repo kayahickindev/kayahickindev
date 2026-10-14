@@ -1,39 +1,39 @@
 {
   "languages": [
     {
-      "bytes": 38124825,
-      "name": "Swift"
-    },
-    {
-      "bytes": 36199162,
-      "name": "TypeScript"
-    },
-    {
-      "bytes": 17762578,
+      "bytes": 152978417,
       "name": "PLpgSQL"
     },
     {
-      "bytes": 14327993,
+      "bytes": 54051246,
+      "name": "TypeScript"
+    },
+    {
+      "bytes": 41505329,
+      "name": "Swift"
+    },
+    {
+      "bytes": 19828243,
       "name": "JavaScript"
     },
     {
-      "bytes": 3444672,
-      "name": "Python"
-    },
-    {
-      "bytes": 579184,
-      "name": "Shell"
-    },
-    {
-      "bytes": 506613,
+      "bytes": 12192709,
       "name": "HTML"
     },
     {
-      "bytes": 270867,
+      "bytes": 4968067,
       "name": "CSS"
     },
     {
-      "bytes": 100845,
+      "bytes": 3918104,
+      "name": "Python"
+    },
+    {
+      "bytes": 702265,
+      "name": "Shell"
+    },
+    {
+      "bytes": 144582,
       "name": "Kotlin"
     },
     {
@@ -49,7 +49,7 @@
       "name": "Makefile"
     },
     {
-      "bytes": 5864,
+      "bytes": 9273,
       "name": "Java"
     },
     {
