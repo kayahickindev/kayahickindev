@@ -79,7 +79,12 @@ class ProfileCardTests(unittest.TestCase):
             path = ROOT / name
             ET.parse(path)
             svg = path.read_text(encoding="utf-8")
-            self.assertIn("Claude Code, Codex, Ghostty, OpenClaw", svg)
+            self.assertIn("Claude Code, Codex, Ghostty, Wispr Flow, Herdr", svg)
+            self.assertNotIn("OpenClaw", svg)
+            self.assertNotIn("Product data", svg)
+            self.assertNotIn("GitHub data", svg)
+            self.assertIn('class="addColor" id="loc_add"', svg)
+            self.assertIn('class="delColor" id="loc_del"', svg)
             for duplicate in ("Co-founder", "Cleveland", "Email.Work", "Website",
                               "@KayaHickin", "Followers", 'class="ascii"'):
                 self.assertNotIn(duplicate, svg)
@@ -165,7 +170,7 @@ class ProfileCardTests(unittest.TestCase):
     def test_cards_scale_instead_of_clipping(self):
         for name in ("dark_mode.svg", "light_mode.svg"):
             root = ET.parse(ROOT / name).getroot()
-            self.assertEqual(root.attrib.get("viewBox"), "0 0 700 535", name)
+            self.assertEqual(root.attrib.get("viewBox"), "0 0 700 489", name)
 
     def test_language_bar_segments_fill_the_track(self):
         totals = json.loads(
@@ -177,7 +182,7 @@ class ProfileCardTests(unittest.TestCase):
             self.assertIn('clip-path="url(#barClip)"', svg)
             group = svg.split('<g clip-path="url(#barClip)">')[1].split("</g>")[0]
             segments = re.findall(
-                r'<rect x="([\d.]+)" y="460" width="([\d.]+)"', group
+                r'<rect x="([\d.]+)" y="414" width="([\d.]+)"', group
             )
             self.assertGreaterEqual(len(segments), 2, name)
             covered = sum(float(width) for _, width in segments)
@@ -597,13 +602,15 @@ class ProfileCardTests(unittest.TestCase):
                 {
                     "paid_data": "12,345+",
                     "contribution_data": "12,345",
-                    "metrics_date_data": "2026-10-14 UTC",
+                    "loc_add": "15,000,000",
+                    "loc_del": "6,000,000",
                 },
             )
             svg = target.read_text(encoding="utf-8")
             self.assertIn('id="paid_data">12,345+</tspan>', svg)
             self.assertIn('id="contribution_data">12,345</tspan>', svg)
-            self.assertIn('id="metrics_date_data">2026-10-14 UTC</tspan>', svg)
+            self.assertIn('class="addColor" id="loc_add">15,000,000</tspan>', svg)
+            self.assertIn('class="delColor" id="loc_del">6,000,000</tspan>', svg)
             ET.parse(target)
 
 

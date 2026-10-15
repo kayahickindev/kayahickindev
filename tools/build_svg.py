@@ -8,7 +8,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 
-CARD_W, CARD_H = 700, 535
+CARD_W, CARD_H = 700, 489
 
 # Full-width terminal readout. Identity and contact details live in the sidebar.
 WIDTH = 63
@@ -16,10 +16,10 @@ X_RIGHT = 24
 FS = 17
 LINE_H = 23
 Y0 = 32
-BAR_X, BAR_Y, BAR_W, BAR_H = 24, 460, 652, 9
+BAR_X, BAR_Y, BAR_W, BAR_H = 24, 414, 652, 9
 LEGEND_FS = 11
 LEGEND_COLS = (24, 247, 470)
-LEGEND_ROWS = (495, 518)
+LEGEND_ROWS = (449, 472)
 LEGEND_SLOTS = len(LEGEND_COLS) * len(LEGEND_ROWS)
 
 # GitHub linguist colours, so the bar matches what each repo page shows.
@@ -59,7 +59,6 @@ ID_TO_STAT = {
     "rating_data": "rating", "reviews_data": "reviews",
     "pr_data": "prs", "contribution_data": "contributions",
     "loc_add": "loc_add", "loc_del": "loc_del",
-    "metrics_date_data": "metrics_date", "github_date_data": "github_date",
 }
 STATS = {}
 for element in ET.parse(args.stats_from).getroot().iter():
@@ -108,7 +107,7 @@ def header(label):
     return f'<tspan x="{X_RIGHT}" y="{{y}}">{esc(label)}</tspan> {rule}'
 
 
-def kv(pairs, ids=None):
+def kv(pairs, value_class="value"):
     """One line of `. Key: <dots> Value [| Key: <dots> Value]`, right edge at WIDTH.
 
     pairs: list of (key_markup, key_len, value_markup, value_len, dots_id)
@@ -130,7 +129,7 @@ def kv(pairs, ids=None):
         idattr = f' id="{dots_id}_dots"' if dots_id else ""
         vid = f' id="{dots_id}"' if dots_id else ""
         parts.append(f'{kmk}:<tspan class="cc"{idattr}> {"." * dots} </tspan>'
-                     f'<tspan class="value"{vid}>{vmk}</tspan>')
+                     f'<tspan class="{value_class}"{vid}>{vmk}</tspan>')
         if i < len(pairs) - 1:
             parts.append(" | ")
     return "".join(parts)
@@ -143,9 +142,9 @@ def key(name):
     return mk, len(name)
 
 
-def line_kv(name, value, dots_id=None):
+def line_kv(name, value, dots_id=None, value_class="value"):
     kmk, klen = key(name)
-    return kv([(kmk, klen, esc(value), len(value), dots_id)])
+    return kv([(kmk, klen, esc(value), len(value), dots_id)], value_class)
 
 
 def line_kv2(n1, v1, id1, n2, v2, id2):
@@ -159,7 +158,7 @@ rows = [
     line_kv("Platforms", "iOS, Android, Web"),
     line_kv("Languages", "Swift, TypeScript, Python"),
     line_kv("Frameworks", "SwiftUI, React Native, Next.js"),
-    line_kv("Toolchain", "Claude Code, Codex, Ghostty, OpenClaw"),
+    line_kv("Toolchain", "Claude Code, Codex, Ghostty, Wispr Flow, Herdr"),
     None,
     header("MyFutureSelf"),
     line_kv2("Downloads", STATS["downloads"], "downloads_data",
@@ -168,14 +167,12 @@ rows = [
              "Actions", STATS["actions"], "actions_data"),
     line_kv2("Rating", STATS["rating"], "rating_data",
              "Ratings", STATS["reviews"], "reviews_data"),
-    line_kv("Product data", STATS["metrics_date"], "metrics_date_data"),
     None,
     header("GitHub"),
     line_kv("PRs merged", STATS["prs"], "pr_data"),
     line_kv("Contributions (1y)", STATS["contributions"], "contribution_data"),
-    line_kv("Lines added", STATS["loc_add"], "loc_add"),
-    line_kv("Lines removed", STATS["loc_del"], "loc_del"),
-    line_kv("GitHub data", STATS["github_date"], "github_date_data"),
+    line_kv("Lines added", STATS["loc_add"], "loc_add", "addColor"),
+    line_kv("Lines removed", STATS["loc_del"], "loc_del", "delColor"),
 ]
 
 

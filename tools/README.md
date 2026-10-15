@@ -16,7 +16,8 @@ The scheduled workflow uses the existing Actions secret and runs every six hours
 at 00:40, 06:40, 12:40 and 18:40 UTC. The personal site's daily metrics workflow
 also dispatches a refresh when its snapshot is ready. GitHub hosts both workflows;
 they do not depend on a local process or an open conversation. Scheduled runs can
-be delayed by GitHub, so the card's timestamps are the freshness evidence.
+be delayed by GitHub; `profile_refresh_state.json` records the source and refresh
+timestamps for freshness checks.
 
 Do not enable `SKIP_IF_REFRESHED_TODAY` in the workflow: that legacy daily-fallback
 gate would suppress the remaining refreshes after the first success each day.
@@ -28,8 +29,8 @@ Product metrics come from `https://kayahickin.com/api/profile-metrics`; fallback
 snapshots and snapshots older than 48 hours are rejected. Downloads, paid
 subscriptions and actions use exact raw counts. Paid subscriptions uses
 `paidSubscribers`, not the legacy `paidSubscribersEver` display value. ARR keeps
-the source's public display precision. The card shows separate product-source
-and GitHub-fetch timestamps.
+the source's public display precision. Freshness timestamps stay in
+`profile_refresh_state.json`, outside the visible card.
 
 GitHub activity includes private repositories. Lines added and removed sum the
 user's non-merge commits on code repositories' default branches. They describe
@@ -45,10 +46,12 @@ never publish a partial total. Regression tests cover recovery and exhaustion.
 
 ## Layout
 
-The 700 by 535 card uses 63 monospace columns and a full-width language bar.
+The 700 by 489 card uses 63 monospace columns and a full-width language bar.
 Every dynamic value has a sibling `*_dots` span that absorbs length changes.
 Change the builder and `LINE_GROUPS` together when adding or removing metrics.
 The builder requires recorded values rather than silently inserting old numbers.
+Keep the README free of refresh notes and date rows. Lines added use `addColor`
+and lines removed use `delColor`; preserve those classes when updating values.
 Name, role, portrait, company, location, contact links and follower count belong
 in GitHub's sidebar and are intentionally absent from the card. The original
 ASCII portrait source and generator remain available under `tools/`.

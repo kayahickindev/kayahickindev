@@ -50,8 +50,6 @@ LINE_GROUPS = [
     (("contribution_data",), "contribution_data_dots"),
     (("loc_add",), "loc_add_dots"),
     (("loc_del",), "loc_del_dots"),
-    (("metrics_date_data",), "metrics_date_data_dots"),
-    (("github_date_data",), "github_date_data_dots"),
 ]
 
 
@@ -171,7 +169,6 @@ def fetch_site_stats(url=METRICS_URL, now=None):
         "actions_data": f'{raw("futureSelfActions"):,.0f}',
         "rating_data": f'{raw("appStoreRating"):.1f}',
         "reviews_data": f'{round(raw("appStoreReviews")):,}',
-        "metrics_date_data": generated.astimezone(timezone.utc).strftime("%Y-%m-%d UTC"),
     }
     print(f"profile metrics: generatedAt={generated_at}")
     return values, generated_at
@@ -480,7 +477,6 @@ def main():
         stats = fetch_stats(token, LOC_CACHE_PATH, LANGUAGE_STATS_PATH)
         if stats:
             values.update(stats)
-            values["github_date_data"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     elif os.environ.get("REQUIRE_GITHUB_STATS") == "1":
         raise RuntimeError("ACCESS_TOKEN is required for complete GitHub and LOC stats")
     else:
