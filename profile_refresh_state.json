@@ -1,6 +1,6 @@
 {
-  "metricsGeneratedAt": "2026-10-14T04:15:32.305Z",
-  "refreshedAt": "2026-10-14T23:05:05.953101Z",
-  "refreshedOn": "2026-10-14",
-  "trigger": "workflow_dispatch"
+  "metricsGeneratedAt": "2026-10-15T04:15:35.489Z",
+  "refreshedAt": "2026-10-15T05:19:15.693155Z",
+  "refreshedOn": "2026-10-15",
+  "trigger": "schedule"
 }
