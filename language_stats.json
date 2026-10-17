@@ -1,19 +1,19 @@
 {
   "languages": [
     {
-      "bytes": 157677927,
+      "bytes": 157841468,
       "name": "PLpgSQL"
     },
     {
-      "bytes": 55963295,
+      "bytes": 56007277,
       "name": "TypeScript"
     },
     {
-      "bytes": 43220050,
+      "bytes": 43301035,
       "name": "Swift"
     },
     {
-      "bytes": 21946999,
+      "bytes": 22439841,
       "name": "JavaScript"
     },
     {
@@ -29,7 +29,7 @@
       "name": "Python"
     },
     {
-      "bytes": 708914,
+      "bytes": 724673,
       "name": "Shell"
     },
     {
@@ -45,12 +45,12 @@
       "name": "Metal"
     },
     {
-      "bytes": 10293,
-      "name": "Makefile"
+      "bytes": 11303,
+      "name": "Java"
     },
     {
-      "bytes": 9273,
-      "name": "Java"
+      "bytes": 10293,
+      "name": "Makefile"
     },
     {
       "bytes": 3872,
