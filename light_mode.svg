@@ -19,22 +19,22 @@ text, tspan {white-space: pre;}
 <clipPath id="barClip"><rect x="24" y="414" width="652" height="9" rx="4.5"/></clipPath>
 <rect x="24" y="414" width="652" height="9" rx="4.5" fill="#eaeef2"/>
 <g clip-path="url(#barClip)">
-<rect x="24.00" y="414" width="340.30" height="9" fill="#336790"/>
-<rect x="364.30" y="414" width="121.28" height="9" fill="#3178c6"/>
-<rect x="485.58" y="414" width="93.97" height="9" fill="#F05138"/>
-<rect x="579.55" y="414" width="48.70" height="9" fill="#f1e05a"/>
-<rect x="628.25" y="414" width="25.84" height="9" fill="#e34c26"/>
-<rect x="654.09" y="414" width="21.91" height="9" fill="#8b949e"/>
+<rect x="24.00" y="414" width="339.85" height="9" fill="#336790"/>
+<rect x="363.85" y="414" width="121.17" height="9" fill="#3178c6"/>
+<rect x="485.02" y="414" width="94.01" height="9" fill="#F05138"/>
+<rect x="579.03" y="414" width="49.24" height="9" fill="#f1e05a"/>
+<rect x="628.27" y="414" width="25.81" height="9" fill="#e34c26"/>
+<rect x="654.08" y="414" width="21.92" height="9" fill="#8b949e"/>
 </g>
 <g font-size="11px" fill="#24292f">
 <circle cx="28" cy="445" r="4" fill="#336790"/>
-<text x="38" y="449">PLpgSQL <tspan class="cc">52.2%</tspan></text>
+<text x="38" y="449">PLpgSQL <tspan class="cc">52.1%</tspan></text>
 <circle cx="251" cy="445" r="4" fill="#3178c6"/>
 <text x="261" y="449">TypeScript <tspan class="cc">18.6%</tspan></text>
 <circle cx="474" cy="445" r="4" fill="#F05138"/>
 <text x="484" y="449">Swift <tspan class="cc">14.4%</tspan></text>
 <circle cx="28" cy="468" r="4" fill="#f1e05a"/>
-<text x="38" y="472">JavaScript <tspan class="cc">7.5%</tspan></text>
+<text x="38" y="472">JavaScript <tspan class="cc">7.6%</tspan></text>
 <circle cx="251" cy="468" r="4" fill="#e34c26"/>
 <text x="261" y="472">HTML <tspan class="cc">4.0%</tspan></text>
 <circle cx="474" cy="468" r="4" fill="#8b949e"/>
@@ -51,9 +51,9 @@ text, tspan {white-space: pre;}
 <tspan x="24" y="216" class="cc">. </tspan><tspan class="key">ARR</tspan>:<tspan class="cc" id="arr_data_dots"> .... </tspan><tspan class="value" id="arr_data">$161K</tspan> | <tspan class="key">Actions</tspan>:<tspan class="cc" id="actions_data_dots"> .......................... </tspan><tspan class="value" id="actions_data">276,705</tspan>
 <tspan x="24" y="239" class="cc">. </tspan><tspan class="key">Rating</tspan>:<tspan class="cc" id="rating_data_dots"> .... </tspan><tspan class="value" id="rating_data">4.6</tspan> | <tspan class="key">Ratings</tspan>:<tspan class="cc" id="reviews_data_dots"> ........................... </tspan><tspan class="value" id="reviews_data">2,120</tspan>
 <tspan x="24" y="285">GitHub</tspan> ────────────────────────────────────────────────────────
-<tspan x="24" y="308" class="cc">. </tspan><tspan class="key">PRs merged</tspan>:<tspan class="cc" id="pr_data_dots"> ........................................... </tspan><tspan class="value" id="pr_data">4,278</tspan>
-<tspan x="24" y="331" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .................................. </tspan><tspan class="value" id="contribution_data">25,595</tspan>
-<tspan x="24" y="354" class="cc">. </tspan><tspan class="key">Lines added</tspan>:<tspan class="cc" id="loc_add_dots"> ..................................... </tspan><tspan class="addColor" id="loc_add">15,877,716</tspan>
-<tspan x="24" y="377" class="cc">. </tspan><tspan class="key">Lines removed</tspan>:<tspan class="cc" id="loc_del_dots"> .................................... </tspan><tspan class="delColor" id="loc_del">6,454,108</tspan>
+<tspan x="24" y="308" class="cc">. </tspan><tspan class="key">PRs merged</tspan>:<tspan class="cc" id="pr_data_dots"> ........................................... </tspan><tspan class="value" id="pr_data">4,302</tspan>
+<tspan x="24" y="331" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .................................. </tspan><tspan class="value" id="contribution_data">25,758</tspan>
+<tspan x="24" y="354" class="cc">. </tspan><tspan class="key">Lines added</tspan>:<tspan class="cc" id="loc_add_dots"> ..................................... </tspan><tspan class="addColor" id="loc_add">16,104,831</tspan>
+<tspan x="24" y="377" class="cc">. </tspan><tspan class="key">Lines removed</tspan>:<tspan class="cc" id="loc_del_dots"> .................................... </tspan><tspan class="delColor" id="loc_del">6,501,462</tspan>
 </text>
 </svg>
