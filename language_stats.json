@@ -1,19 +1,19 @@
 {
   "languages": [
     {
-      "bytes": 157847608,
+      "bytes": 157847982,
       "name": "PLpgSQL"
     },
     {
-      "bytes": 56280104,
+      "bytes": 56285919,
       "name": "TypeScript"
     },
     {
-      "bytes": 43666138,
+      "bytes": 43716427,
       "name": "Swift"
     },
     {
-      "bytes": 22871020,
+      "bytes": 22887006,
       "name": "JavaScript"
     },
     {
@@ -29,7 +29,7 @@
       "name": "Python"
     },
     {
-      "bytes": 754800,
+      "bytes": 756389,
       "name": "Shell"
     },
     {
