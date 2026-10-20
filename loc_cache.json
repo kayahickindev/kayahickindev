@@ -1,9 +1,9 @@
 {
   "repositories": {
     "MyFutureSelf/MyFutureSelf": {
-      "additions": 3021829,
-      "deletions": 1322097,
-      "headOid": "d14c1fb44599bc4f7e841948864b31770c463785"
+      "additions": 3043860,
+      "deletions": 1331002,
+      "headOid": "923b7ea0d2a0f2a5bde351b74a153b025a58b89c"
     },
     "MyFutureSelf/candidate-skills-assessment": {
       "additions": 363284,
@@ -16,14 +16,14 @@
       "headOid": "97c3a2ae79dd2a572029048fb206a7d2b669e8ca"
     },
     "MyFutureSelf/mfs-company-brain": {
-      "additions": 2016851,
-      "deletions": 1197341,
-      "headOid": "31cc0ef4a7d9a57401dc1f7a1a3b76a0f7dd001c"
+      "additions": 2064584,
+      "deletions": 1217205,
+      "headOid": "91db6b258cddff12c9177f176eaa6d0ad557bea2"
     },
     "MyFutureSelf/mfs-company-map": {
-      "additions": 203729,
-      "deletions": 178348,
-      "headOid": "5154f8638a604c7f5ea6e0d99a9f9e8144f78f7f"
+      "additions": 206080,
+      "deletions": 180434,
+      "headOid": "9438123b3e1ac570ffc1f66b4da571d095c24e7a"
     },
     "MyFutureSelf/mfs-competitors": {
       "additions": 246,
@@ -36,14 +36,14 @@
       "headOid": "fc033b033c62152d40ca48b54eaf59297cc439eb"
     },
     "MyFutureSelf/myfutureself-android": {
-      "additions": 1317718,
-      "deletions": 270971,
-      "headOid": "2d02c27ac946bec21326dbc1e56697819ed3bccf"
+      "additions": 1328545,
+      "deletions": 271557,
+      "headOid": "3922d0ea3566d1a91d8f9723c7b7a3c47c6a131d"
     },
     "MyFutureSelf/myfutureself-edu": {
-      "additions": 9983609,
-      "deletions": 3714297,
-      "headOid": "8950c3936832f208b5612cb4fcade64a72fce3db"
+      "additions": 10137488,
+      "deletions": 3714841,
+      "headOid": "2ee8e4e89540ac9b4226b197355b7213f2d8d900"
     },
     "MyFutureSelf/myfutureself-raise-crm": {
       "additions": 38016,
@@ -98,7 +98,7 @@
     "kayahickindev/kayahickindev": {
       "additions": 5969,
       "deletions": 3017,
-      "headOid": "12b1ce32de0ac27813c9be49d9ef28531c73125d"
+      "headOid": "3ff123fd1a99ee2d54df2fa87674bdeef3a955d8"
     },
     "kayahickindev/leadboost-sites": {
       "additions": 204584,
