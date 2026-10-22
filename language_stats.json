@@ -1,19 +1,19 @@
 {
   "languages": [
     {
-      "bytes": 157909558,
+      "bytes": 158063625,
       "name": "PLpgSQL"
     },
     {
-      "bytes": 59995754,
+      "bytes": 61194118,
       "name": "TypeScript"
     },
     {
-      "bytes": 46479880,
+      "bytes": 46672107,
       "name": "Swift"
     },
     {
-      "bytes": 27194491,
+      "bytes": 27562624,
       "name": "JavaScript"
     },
     {
@@ -29,7 +29,7 @@
       "name": "Python"
     },
     {
-      "bytes": 926118,
+      "bytes": 933709,
       "name": "Shell"
     },
     {
@@ -37,7 +37,7 @@
       "name": "Kotlin"
     },
     {
-      "bytes": 25932,
+      "bytes": 33675,
       "name": "Objective-C"
     },
     {
