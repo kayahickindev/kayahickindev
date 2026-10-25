@@ -1,9 +1,9 @@
 {
   "repositories": {
     "MyFutureSelf/MyFutureSelf": {
-      "additions": 3389326,
-      "deletions": 1385077,
-      "headOid": "b3a508b080f06f018598d5045621d6678935ac87"
+      "additions": 3396268,
+      "deletions": 1388833,
+      "headOid": "3e596a69beda17b07a1a29dddb559fa84560a404"
     },
     "MyFutureSelf/candidate-skills-assessment": {
       "additions": 363284,
@@ -16,14 +16,14 @@
       "headOid": "666b71f6e09262208707f07c233da0e653a6ecf2"
     },
     "MyFutureSelf/mfs-company-brain": {
-      "additions": 3243404,
-      "deletions": 1988781,
-      "headOid": "af0281f23656e0d25261ae287b1aa1b17a85ba6b"
+      "additions": 3432285,
+      "deletions": 2173734,
+      "headOid": "d01cd39cc6ee72631494765b0e290253575d8d2b"
     },
     "MyFutureSelf/mfs-company-map": {
-      "additions": 264036,
-      "deletions": 237509,
-      "headOid": "c82971dbcd716dcc6a44d04b5930b8b4a05c28ea"
+      "additions": 266584,
+      "deletions": 240325,
+      "headOid": "c70615c8150c62ffa090c559760ab3f315bd71c5"
     },
     "MyFutureSelf/mfs-competitors": {
       "additions": 246,
@@ -36,9 +36,9 @@
       "headOid": "fc033b033c62152d40ca48b54eaf59297cc439eb"
     },
     "MyFutureSelf/myfutureself-android": {
-      "additions": 1408927,
-      "deletions": 292017,
-      "headOid": "0ee633e4045276c4e3fd22d45945ce950ace1d82"
+      "additions": 1416054,
+      "deletions": 292401,
+      "headOid": "04f5f3016bfe1d2553340549176c9d3f8d167e6a"
     },
     "MyFutureSelf/myfutureself-edu": {
       "additions": 10735393,
@@ -98,7 +98,7 @@
     "kayahickindev/kayahickindev": {
       "additions": 5969,
       "deletions": 3017,
-      "headOid": "6c375453c5c827f0cb5c74b189bf2fadeafd3326"
+      "headOid": "39dc658292078ae703fcd43dba92f17a01a5830b"
     },
     "kayahickindev/leadboost-sites": {
       "additions": 204584,
