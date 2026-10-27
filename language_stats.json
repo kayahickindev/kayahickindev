@@ -1,23 +1,23 @@
 {
   "languages": [
     {
-      "bytes": 158514306,
+      "bytes": 158745522,
       "name": "PLpgSQL"
     },
     {
-      "bytes": 66990683,
+      "bytes": 67266354,
       "name": "TypeScript"
     },
     {
-      "bytes": 48886856,
+      "bytes": 48851567,
       "name": "Swift"
     },
     {
-      "bytes": 32977177,
+      "bytes": 32987822,
       "name": "JavaScript"
     },
     {
-      "bytes": 15932801,
+      "bytes": 15861962,
       "name": "HTML"
     },
     {
@@ -25,11 +25,11 @@
       "name": "CSS"
     },
     {
-      "bytes": 5047072,
+      "bytes": 5070773,
       "name": "Python"
     },
     {
-      "bytes": 1174775,
+      "bytes": 1176973,
       "name": "Shell"
     },
     {
