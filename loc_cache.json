@@ -1,9 +1,9 @@
 {
   "repositories": {
     "MyFutureSelf/MyFutureSelf": {
-      "additions": 3483804,
-      "deletions": 1476650,
-      "headOid": "20770284d27ce4af1c951e4f9e0a0b5582b924f5"
+      "additions": 3594270,
+      "deletions": 1540726,
+      "headOid": "9c3fa0b0719ca9d9190080aa8a32279d9a6cca76"
     },
     "MyFutureSelf/candidate-skills-assessment": {
       "additions": 363284,
@@ -16,14 +16,14 @@
       "headOid": "666b71f6e09262208707f07c233da0e653a6ecf2"
     },
     "MyFutureSelf/mfs-company-brain": {
-      "additions": 6069196,
-      "deletions": 4615623,
-      "headOid": "12df64329a13294a5ccda3e3709f3d4745680a2a"
+      "additions": 6813428,
+      "deletions": 5258219,
+      "headOid": "a4fc8b11a8465265956aab4825fc1016d6c6a9da"
     },
     "MyFutureSelf/mfs-company-map": {
-      "additions": 298561,
-      "deletions": 262871,
-      "headOid": "2241e5584a7c4aa20729844f578e3a145f517eee"
+      "additions": 313600,
+      "deletions": 277142,
+      "headOid": "130bee1ccebb07939a67493f021c553c9ba57c3a"
     },
     "MyFutureSelf/mfs-competitors": {
       "additions": 246,
@@ -36,19 +36,19 @@
       "headOid": "fc033b033c62152d40ca48b54eaf59297cc439eb"
     },
     "MyFutureSelf/myfutureself-android": {
-      "additions": 1433896,
-      "deletions": 298155,
-      "headOid": "cd9467801ce86b4382413a463cbebf6d10c36669"
+      "additions": 1476267,
+      "deletions": 369028,
+      "headOid": "eb4e76c2224dd6075d632b78fa9cbc8468a26fbd"
     },
     "MyFutureSelf/myfutureself-edu": {
-      "additions": 10766029,
-      "deletions": 3737389,
-      "headOid": "ee418ed6f0e63f7363907aec66290b5c93b64c6d"
+      "additions": 10800643,
+      "deletions": 3755079,
+      "headOid": "f385a6badf9553cdc88248094790cbe16d83c750"
     },
     "MyFutureSelf/myfutureself-raise-crm": {
-      "additions": 38510,
-      "deletions": 6980,
-      "headOid": "9cfa7059a33050ccfe728aaaa1e97ecc4a9997fd"
+      "additions": 38963,
+      "deletions": 7092,
+      "headOid": "c6055b7e81b9dbb5588d4e8ab5f6b196148b3bd2"
     },
     "MyFutureSelf/myfutureself-website": {
       "additions": 77978,
@@ -98,7 +98,7 @@
     "kayahickindev/kayahickindev": {
       "additions": 5969,
       "deletions": 3017,
-      "headOid": "7e7f7dc56f0e0955f8eaac8f52ea3cd8f8839fbf"
+      "headOid": "0ee3502008b064dac6b1d595e8d14fc9195238de"
     },
     "kayahickindev/leadboost-sites": {
       "additions": 204584,
