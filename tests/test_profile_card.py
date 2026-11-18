@@ -86,8 +86,13 @@ class ProfileCardTests(unittest.TestCase):
             self.assertIn('class="addColor" id="loc_add"', svg)
             self.assertIn('class="delColor" id="loc_del"', svg)
             for duplicate in ("Co-founder", "Cleveland", "Email.Work", "Website",
-                              "@KayaHickin", "Followers", 'class="ascii"'):
+                              "@KayaHickin", "Followers"):
                 self.assertNotIn(duplicate, svg)
+            # The portrait is part of the card: 412 one-pixel rows of art.
+            self.assertIn('class="ascii"', svg)
+            art = svg.split('class="ascii">')[1].split("</text>")[0]
+            self.assertEqual(art.count("<tspan"), 412, name)
+            self.assertGreater(len(re.sub(r"<[^>]+>|\s", "", art)), 20000, name)
             self.assertIn('id="downloads_data"', svg)
             self.assertIn('id="paid_data"', svg)
             self.assertIn('id="arr_data"', svg)
@@ -170,7 +175,7 @@ class ProfileCardTests(unittest.TestCase):
     def test_cards_scale_instead_of_clipping(self):
         for name in ("dark_mode.svg", "light_mode.svg"):
             root = ET.parse(ROOT / name).getroot()
-            self.assertEqual(root.attrib.get("viewBox"), "0 0 700 489", name)
+            self.assertEqual(root.attrib.get("viewBox"), "0 0 985 472", name)
 
     def test_language_bar_segments_fill_the_track(self):
         totals = json.loads(
@@ -182,11 +187,11 @@ class ProfileCardTests(unittest.TestCase):
             self.assertIn('clip-path="url(#barClip)"', svg)
             group = svg.split('<g clip-path="url(#barClip)">')[1].split("</g>")[0]
             segments = re.findall(
-                r'<rect x="([\d.]+)" y="414" width="([\d.]+)"', group
+                r'<rect x="([\d.]+)" y="404" width="([\d.]+)"', group
             )
             self.assertGreaterEqual(len(segments), 2, name)
             covered = sum(float(width) for _, width in segments)
-            self.assertAlmostEqual(covered, 652.0, delta=0.5, msg=name)
+            self.assertAlmostEqual(covered, 642.0, delta=0.5, msg=name)
             self.assertIn(totals["languages"][0]["name"], svg, name)
 
     def test_widest_readout_line_stays_inside_the_card(self):
@@ -197,11 +202,11 @@ class ProfileCardTests(unittest.TestCase):
         """
         for name in ("dark_mode.svg", "light_mode.svg"):
             svg = (ROOT / name).read_text(encoding="utf-8")
-            rows = re.findall(r'<tspan x="24" y="(\d+)" class="cc">\. </tspan>', svg)
+            rows = re.findall(r'<tspan x="318" y="(\d+)" class="cc">\. </tspan>', svg)
             self.assertTrue(rows)
             for row_y in rows:
-                line = svg.split(f'<tspan x="24" y="{row_y}" class="cc">. </tspan>')[1]
-                line = line.split('<tspan x="24" y=')[0]
+                line = svg.split(f'<tspan x="318" y="{row_y}" class="cc">. </tspan>')[1]
+                line = line.split('<tspan x="318" y=')[0]
                 text = re.sub(r"<[^>]+>", "", line).replace("\n", "")
                 text = (text.replace("&amp;", "&").replace("&lt;", "<")
                         .replace("&gt;", ">"))

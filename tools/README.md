@@ -46,12 +46,15 @@ never publish a partial total. Regression tests cover recovery and exhaustion.
 
 ## Layout
 
-The 700 by 489 card uses 63 monospace columns and a full-width language bar.
+The 985 by 472 card has the stipple portrait on the left (430 by 412 one-pixel
+cells from `ascii_art_dark.txt` and `ascii_art_light.txt`) and, on the right, a
+63-column monospace readout with the language bar beneath it.
 Every dynamic value has a sibling `*_dots` span that absorbs length changes.
 Change the builder and `LINE_GROUPS` together when adding or removing metrics.
 The builder requires recorded values rather than silently inserting old numbers.
 Keep the README free of refresh notes and date rows. Lines added use `addColor`
 and lines removed use `delColor`; preserve those classes when updating values.
-Name, role, portrait, company, location, contact links and follower count belong
-in GitHub's sidebar and are intentionally absent from the card. The original
-ASCII portrait source and generator remain available under `tools/`.
+Name, role, company, location, contact links and follower count belong in
+GitHub's sidebar and are intentionally absent from the card. The portrait stays
+on the card: do not remove it when changing the readout. Regenerate it from
+`headshot.png` with `ascii_v3.py`.
