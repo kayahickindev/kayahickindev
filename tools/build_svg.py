@@ -8,18 +8,24 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 
-CARD_W, CARD_H = 700, 489
+CARD_W, CARD_H = 985, 472
 
-# Full-width terminal readout. Identity and contact details live in the sidebar.
+# ---- left column: the stipple portrait ----
+COLS, ROWS = 430, 412
+ART_X, ART_Y0 = 20, 30
+ART_FS, ART_ADVANCE, ART_LINE_H = 1, 0.6, 1.0
+ART_W = COLS * ART_ADVANCE
+
+# ---- right column: the terminal readout, then the language bar ----
 WIDTH = 63
-X_RIGHT = 24
+X_RIGHT = 318
 FS = 17
 LINE_H = 23
-Y0 = 32
-BAR_X, BAR_Y, BAR_W, BAR_H = 24, 414, 652, 9
+Y0 = 36
+BAR_X, BAR_Y, BAR_W, BAR_H = X_RIGHT, 404, 642, 9
 LEGEND_FS = 11
-LEGEND_COLS = (24, 247, 470)
-LEGEND_ROWS = (449, 472)
+LEGEND_COLS = (X_RIGHT, X_RIGHT + 220, X_RIGHT + 440)
+LEGEND_ROWS = (435, 456)
 LEGEND_SLOTS = len(LEGEND_COLS) * len(LEGEND_ROWS)
 
 # GitHub linguist colours, so the bar matches what each repo page shows.
@@ -35,10 +41,19 @@ LANGUAGE_COLORS = {
 OTHER_COLOR = "#8b949e"
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--art-dark", type=Path, default=HERE / "ascii_art_dark.txt")
+parser.add_argument("--art-light", type=Path, default=HERE / "ascii_art_light.txt")
 parser.add_argument("--output-dir", type=Path, default=ROOT)
 parser.add_argument("--stats-from", type=Path, default=ROOT / "dark_mode.svg")
 parser.add_argument("--languages", type=Path, default=ROOT / "language_stats.json")
 args = parser.parse_args()
+
+def read_art(path):
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert len(lines) <= ROWS, (path, len(lines))
+    assert max(len(line) for line in lines) <= COLS, (path, max(map(len, lines)))
+    return lines + [""] * (ROWS - len(lines))
+
 
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -47,10 +62,10 @@ def esc(s):
 # ---- palettes ----
 DARK = dict(bg="#161b22", fg="#c9d1d9", art="#8b949e", key="#ffa657",
             value="#a5d6ff", add="#3fb950", dele="#f85149", cc="#616e7f",
-            track="#21262d")
+            track="#21262d", art_source=args.art_dark)
 LIGHT = dict(bg="#fffefe", fg="#24292f", art="#57606a", key="#953800",
              value="#0a3069", add="#1a7f37", dele="#cf222e", cc="#6e7781",
-             track="#eaeef2")
+             track="#eaeef2", art_source=args.art_light)
 
 # ---- right-column content ----
 ID_TO_STAT = {
@@ -177,7 +192,7 @@ rows = [
 
 
 def language_markup(pal):
-    """Rounded segmented bar plus a two-column legend, clipped to the bar."""
+    """Rounded segmented bar plus a three-column legend, clipped to the bar."""
     if not LANGUAGES:
         return []
     out = [
@@ -231,6 +246,13 @@ size-adjust: 109%;
 text, tspan {{white-space: pre;}}
 </style>""")
     out.append(f'<rect width="{CARD_W}px" height="{CARD_H}px" fill="{pal["bg"]}" rx="15"/>')
+    art_lines = read_art(pal["art_source"])
+    out.append(f'<text x="{ART_X}" y="{ART_Y0}" fill="{pal["art"]}" '
+               f'font-size="{ART_FS}px" class="ascii">')
+    for i in range(ROWS):
+        y = ART_Y0 + i * ART_LINE_H
+        out.append(f'<tspan x="{ART_X}" y="{y}">{esc(art_lines[i])}</tspan>')
+    out.append("</text>")
     out.extend(language_markup(pal))
     out.append(f'<text x="{X_RIGHT}" y="{Y0}" fill="{pal["fg"]}">')
     for i, row in enumerate(rows):
@@ -248,7 +270,10 @@ for filename, palette in (("dark_mode.svg", DARK), ("light_mode.svg", LIGHT)):
     (args.output_dir / filename).write_text(build(palette), encoding="utf-8")
 print(f"wrote {args.output_dir / 'dark_mode.svg'}, {args.output_dir / 'light_mode.svg'}")
 
-# All content stays inside the card; readout rows end on the same column.
+# The portrait, the readout and the language block all stay inside the card,
+# and readout rows end on the same column.
+assert ART_X + ART_W <= X_RIGHT, (ART_X + ART_W, X_RIGHT)
+assert ART_Y0 + (ROWS - 1) * ART_LINE_H < CARD_H
 assert X_RIGHT + WIDTH * (FS * 0.6) <= CARD_W
 assert BAR_X + BAR_W <= CARD_W
 assert max(LEGEND_ROWS) < CARD_H
