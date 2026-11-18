@@ -433,26 +433,26 @@ text, tspan {white-space: pre;}
 <clipPath id="barClip"><rect x="318" y="404" width="642" height="9" rx="4.5"/></clipPath>
 <rect x="318" y="404" width="642" height="9" rx="4.5" fill="#eaeef2"/>
 <g clip-path="url(#barClip)">
-<rect x="318.00" y="404" width="277.94" height="9" fill="#336790"/>
-<rect x="595.94" y="404" width="126.04" height="9" fill="#3178c6"/>
-<rect x="721.98" y="404" width="89.90" height="9" fill="#F05138"/>
-<rect x="811.88" y="404" width="71.95" height="9" fill="#f1e05a"/>
-<rect x="883.83" y="404" width="27.44" height="9" fill="#e34c26"/>
-<rect x="911.27" y="404" width="48.73" height="9" fill="#8b949e"/>
+<rect x="318.00" y="404" width="252.09" height="9" fill="#336790"/>
+<rect x="570.09" y="404" width="130.63" height="9" fill="#3178c6"/>
+<rect x="700.73" y="404" width="101.82" height="9" fill="#f1e05a"/>
+<rect x="802.55" y="404" width="88.10" height="9" fill="#F05138"/>
+<rect x="890.65" y="404" width="24.29" height="9" fill="#e34c26"/>
+<rect x="914.94" y="404" width="45.06" height="9" fill="#8b949e"/>
 </g>
 <g font-size="11px" fill="#24292f">
 <circle cx="322" cy="431" r="4" fill="#336790"/>
-<text x="332" y="435">PLpgSQL <tspan class="cc">43.3%</tspan></text>
+<text x="332" y="435">PLpgSQL <tspan class="cc">39.3%</tspan></text>
 <circle cx="542" cy="431" r="4" fill="#3178c6"/>
-<text x="552" y="435">TypeScript <tspan class="cc">19.6%</tspan></text>
-<circle cx="762" cy="431" r="4" fill="#F05138"/>
-<text x="772" y="435">Swift <tspan class="cc">14.0%</tspan></text>
-<circle cx="322" cy="452" r="4" fill="#f1e05a"/>
-<text x="332" y="456">JavaScript <tspan class="cc">11.2%</tspan></text>
+<text x="552" y="435">TypeScript <tspan class="cc">20.3%</tspan></text>
+<circle cx="762" cy="431" r="4" fill="#f1e05a"/>
+<text x="772" y="435">JavaScript <tspan class="cc">15.9%</tspan></text>
+<circle cx="322" cy="452" r="4" fill="#F05138"/>
+<text x="332" y="456">Swift <tspan class="cc">13.7%</tspan></text>
 <circle cx="542" cy="452" r="4" fill="#e34c26"/>
-<text x="552" y="456">HTML <tspan class="cc">4.3%</tspan></text>
+<text x="552" y="456">HTML <tspan class="cc">3.8%</tspan></text>
 <circle cx="762" cy="452" r="4" fill="#8b949e"/>
-<text x="772" y="456">Other <tspan class="cc">7.6%</tspan></text>
+<text x="772" y="456">Other <tspan class="cc">7.0%</tspan></text>
 </g>
 <text x="318" y="36" fill="#24292f">
 <tspan x="318" y="36">Engineering</tspan> ───────────────────────────────────────────────────
@@ -461,13 +461,13 @@ text, tspan {white-space: pre;}
 <tspan x="318" y="105" class="cc">. </tspan><tspan class="key">Frameworks</tspan>:<tspan class="cc"> .................. </tspan><tspan class="value">SwiftUI, React Native, Next.js</tspan>
 <tspan x="318" y="128" class="cc">. </tspan><tspan class="key">Toolchain</tspan>:<tspan class="cc"> ... </tspan><tspan class="value">Claude Code, Codex, Ghostty, Wispr Flow, Herdr</tspan>
 <tspan x="318" y="174">MyFutureSelf</tspan> ──────────────────────────────────────────────────
-<tspan x="318" y="197" class="cc">. </tspan><tspan class="key">Downloads</tspan>:<tspan class="cc" id="downloads_data_dots"> .... </tspan><tspan class="value" id="downloads_data">90,857</tspan> | <tspan class="key">Paid subscriptions</tspan>:<tspan class="cc" id="paid_data_dots"> .......... </tspan><tspan class="value" id="paid_data">5,009</tspan>
-<tspan x="318" y="220" class="cc">. </tspan><tspan class="key">ARR</tspan>:<tspan class="cc" id="arr_data_dots"> .... </tspan><tspan class="value" id="arr_data">$181K</tspan> | <tspan class="key">Actions</tspan>:<tspan class="cc" id="actions_data_dots"> .......................... </tspan><tspan class="value" id="actions_data">171,135</tspan>
-<tspan x="318" y="243" class="cc">. </tspan><tspan class="key">Rating</tspan>:<tspan class="cc" id="rating_data_dots"> .... </tspan><tspan class="value" id="rating_data">4.6</tspan> | <tspan class="key">Ratings</tspan>:<tspan class="cc" id="reviews_data_dots"> ........................... </tspan><tspan class="value" id="reviews_data">2,266</tspan>
+<tspan x="318" y="197" class="cc">. </tspan><tspan class="key">Downloads</tspan>:<tspan class="cc" id="downloads_data_dots"> .... </tspan><tspan class="value" id="downloads_data">109,581</tspan> | <tspan class="key">Paid subscriptions</tspan>:<tspan class="cc" id="paid_data_dots"> ......... </tspan><tspan class="value" id="paid_data">5,712</tspan>
+<tspan x="318" y="220" class="cc">. </tspan><tspan class="key">ARR</tspan>:<tspan class="cc" id="arr_data_dots"> .... </tspan><tspan class="value" id="arr_data">$213K</tspan> | <tspan class="key">Actions</tspan>:<tspan class="cc" id="actions_data_dots"> .......................... </tspan><tspan class="value" id="actions_data">195,743</tspan>
+<tspan x="318" y="243" class="cc">. </tspan><tspan class="key">Rating</tspan>:<tspan class="cc" id="rating_data_dots"> .... </tspan><tspan class="value" id="rating_data">4.6</tspan> | <tspan class="key">Ratings</tspan>:<tspan class="cc" id="reviews_data_dots"> ........................... </tspan><tspan class="value" id="reviews_data">2,615</tspan>
 <tspan x="318" y="289">GitHub</tspan> ────────────────────────────────────────────────────────
-<tspan x="318" y="312" class="cc">. </tspan><tspan class="key">PRs merged</tspan>:<tspan class="cc" id="pr_data_dots"> ........................................... </tspan><tspan class="value" id="pr_data">6,543</tspan>
-<tspan x="318" y="335" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .................................. </tspan><tspan class="value" id="contribution_data">43,515</tspan>
-<tspan x="318" y="358" class="cc">. </tspan><tspan class="key">Lines added</tspan>:<tspan class="cc" id="loc_add_dots"> ..................................... </tspan><tspan class="addColor" id="loc_add">25,706,643</tspan>
-<tspan x="318" y="381" class="cc">. </tspan><tspan class="key">Lines removed</tspan>:<tspan class="cc" id="loc_del_dots"> ................................... </tspan><tspan class="delColor" id="loc_del">12,166,775</tspan>
+<tspan x="318" y="312" class="cc">. </tspan><tspan class="key">PRs merged</tspan>:<tspan class="cc" id="pr_data_dots"> .......................................... </tspan><tspan class="value" id="pr_data">10,531</tspan>
+<tspan x="318" y="335" class="cc">. </tspan><tspan class="key">Contributions (1y)</tspan>:<tspan class="cc" id="contribution_data_dots"> .................................. </tspan><tspan class="value" id="contribution_data">73,065</tspan>
+<tspan x="318" y="358" class="cc">. </tspan><tspan class="key">Lines added</tspan>:<tspan class="cc" id="loc_add_dots"> ..................................... </tspan><tspan class="addColor" id="loc_add">39,723,881</tspan>
+<tspan x="318" y="381" class="cc">. </tspan><tspan class="key">Lines removed</tspan>:<tspan class="cc" id="loc_del_dots"> ................................... </tspan><tspan class="delColor" id="loc_del">20,759,761</tspan>
 </text>
 </svg>

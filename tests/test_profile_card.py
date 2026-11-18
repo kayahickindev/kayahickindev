@@ -563,10 +563,14 @@ class ProfileCardTests(unittest.TestCase):
                 "deletions": 20,
             }
         }
+        # History that no longer contains the cached head cannot be advanced.
         with (
             mock.patch.object(
                 update_readme, "fetch_repo_head", return_value="new-head"
             ),
+            mock.patch.object(
+                update_readme, "advance_repo_loc", return_value=None
+            ) as advance,
             mock.patch.object(
                 update_readme, "fetch_repo_loc", return_value=(150, 30)
             ) as fetch_repo_loc,
@@ -577,7 +581,239 @@ class ProfileCardTests(unittest.TestCase):
 
         self.assertEqual(result[:2], (150, 30))
         self.assertEqual(result[2]["headOid"], "new-head")
+        advance.assert_called_once()
         fetch_repo_loc.assert_called_once()
+
+    def test_changed_repository_counts_only_new_commits(self):
+        cache = {"owner/repo": {"headOid": "old", "additions": 120, "deletions": 20}}
+        with (
+            mock.patch.object(update_readme, "fetch_repo_head", return_value="new"),
+            mock.patch.object(update_readme, "next_step", return_value=("new", 4)),
+            mock.patch.object(
+                update_readme, "fetch_incremental_loc", return_value=(30, 10, 3)
+            ) as incremental,
+            mock.patch.object(update_readme, "fetch_repo_loc") as full_recount,
+        ):
+            result = update_readme.fetch_cached_repo_loc(
+                "owner/repo", "U_1", "secret", cache
+            )
+        self.assertEqual(result, (150, 30, {
+            "headOid": "new", "additions": 150, "deletions": 30,
+        }))
+        incremental.assert_called_once_with("owner/repo", "U_1", "secret", "old", "new", 4)
+        full_recount.assert_not_called()
+
+    @staticmethod
+    def range_commit(sha, author="U_1", parents=1):
+        return {"sha": sha, "author": {"node_id": author} if author else None,
+                "parents": [{"sha": f"p{i}"} for i in range(parents)]}
+
+    def test_incremental_loc_counts_own_non_merge_commits(self):
+        commits = [
+            self.range_commit("a1"),
+            self.range_commit("b2", author="U_other"),
+            self.range_commit("c3", parents=2),
+            self.range_commit("d4", author=None),
+            self.range_commit("e5"),
+        ]
+        stats = {"a1": (10, 1), "e5": (5, 4)}
+        queries = []
+
+        def fake_graphql(query, _variables, _token, _label):
+            queries.append(query)
+            found = re.findall(r'(c\d+): object\(oid: "(\w+)"\)', query)
+            return {"repository": {
+                alias: {"additions": stats[oid][0], "deletions": stats[oid][1]}
+                for alias, oid in found
+            }}
+
+        with (
+            mock.patch.object(update_readme, "gh", return_value=(200, {
+                "ahead_by": 5, "behind_by": 0, "commits": commits,
+            })),
+            mock.patch.object(update_readme, "graphql", side_effect=fake_graphql),
+        ):
+            result = update_readme.fetch_incremental_loc(
+                "owner/repo", "U_1", "secret", "old", "new", 5
+            )
+        self.assertEqual(result, (15, 5, 2))
+        self.assertEqual(len(queries), 1)
+        self.assertNotIn("b2", queries[0])
+        self.assertNotIn("c3", queries[0])
+
+    def test_rewritten_or_missing_base_falls_back_to_full_recount(self):
+        cached = {"headOid": "old", "additions": 1, "deletions": 1}
+        with mock.patch.object(update_readme, "gh", return_value=(200, {
+            "ahead_by": 3, "behind_by": 2, "commits": [],
+        })):
+            self.assertIsNone(update_readme.advance_repo_loc(
+                "owner/repo", "U_1", "secret", cached, "new"
+            ))
+        missing = urllib.error.HTTPError("https://api.github.com/x", 404,
+                                         "Not Found", {}, io.BytesIO(b"{}"))
+        with mock.patch.object(update_readme, "gh", side_effect=missing):
+            self.assertIsNone(update_readme.advance_repo_loc(
+                "owner/repo", "U_1", "secret", cached, "new"
+            ))
+        # A listing that comes back short is not exact either.
+        with mock.patch.object(update_readme, "gh", return_value=(200, {
+            "ahead_by": 3, "behind_by": 0, "commits": [],
+        })):
+            self.assertIsNone(update_readme.advance_repo_loc(
+                "owner/repo", "U_1", "secret", cached, "new"
+            ))
+
+    def linear_history(self, order, side_branch=()):
+        """A fake GitHub over a linear history; `side_branch` commits do not
+        descend from `base`, the way an old branch merged late does not."""
+        def fake_gh(path, _token):
+            compare = re.match(
+                r"/repos/owner/repo/compare/(\w+)\.\.\.(\w+)\?per_page=(\d+)&page=(\d+)",
+                path,
+            )
+            if compare:
+                base, head = compare.group(1), compare.group(2)
+                per_page, page = int(compare.group(3)), int(compare.group(4))
+                span = order[order.index(base) + 1:order.index(head) + 1]
+                chunk = span[(page - 1) * per_page:page * per_page]
+                return 200, {"ahead_by": len(span),
+                             "behind_by": 1 if head in side_branch else 0,
+                             "commits": [self.range_commit(sha) for sha in chunk]}
+            listing = re.match(
+                r"/repos/owner/repo/commits\?sha=(\w+)&per_page=1&page=(\d+)", path
+            )
+            if listing:
+                index = order.index(listing.group(1)) - (int(listing.group(2)) - 1)
+                return 200, [{"sha": order[index]}] if index >= 0 else []
+            raise AssertionError(path)
+        return fake_gh
+
+    def test_long_backlog_advances_in_checkpointed_chunks(self):
+        order = ["base"] + [f"c{i}" for i in range(1, 8)]
+        saved = []
+
+        def fake_graphql(query, _variables, _token, _label):
+            return {"repository": {
+                alias: {"additions": 10, "deletions": 1}
+                for alias in re.findall(r"(c\d+): object", query)
+            }}
+
+        with (
+            mock.patch.object(update_readme, "CHUNK_COMMITS", 3),
+            mock.patch.object(update_readme, "COMPARE_PAGE", 2),
+            mock.patch.object(update_readme, "gh", side_effect=self.linear_history(order)),
+            mock.patch.object(update_readme, "graphql", side_effect=fake_graphql),
+        ):
+            result = update_readme.advance_repo_loc(
+                "owner/repo", "U_1", "secret",
+                {"headOid": "base", "additions": 100, "deletions": 50}, "c7",
+                saved.append,
+            )
+        # Seven commits, each counted once across the three steps.
+        self.assertEqual(result, (170, 57))
+        self.assertEqual(saved, [
+            {"headOid": "c3", "additions": 130, "deletions": 53},
+            {"headOid": "c6", "additions": 160, "deletions": 56},
+        ])
+
+    def test_chunk_stop_must_descend_from_the_cached_head(self):
+        order = ["base"] + [f"c{i}" for i in range(1, 8)]
+        with (
+            mock.patch.object(update_readme, "CHUNK_COMMITS", 3),
+            mock.patch.object(update_readme, "gh",
+                              side_effect=self.linear_history(order, side_branch=("c3",))),
+        ):
+            # c3 would be the natural stop but does not contain `base`.
+            self.assertEqual(
+                update_readme.next_step("owner/repo", "base", "c7", "secret"),
+                ("c2", 2),
+            )
+        with (
+            mock.patch.object(update_readme, "CHUNK_COMMITS", 3),
+            mock.patch.object(update_readme, "COMPARE_LIMIT", 5),
+            mock.patch.object(update_readme, "gh", side_effect=self.linear_history(
+                order, side_branch=tuple(order[1:7]))),
+        ):
+            # No usable stop and the whole range is past the listing limit.
+            self.assertIsNone(
+                update_readme.next_step("owner/repo", "base", "c7", "secret")
+            )
+
+    def test_commit_stats_batch_shrinks_after_gateway_timeouts(self):
+        oids = [f"{i:040x}" for i in range(50)]
+        sizes = []
+
+        def fake_graphql(query, _variables, _token, _label):
+            aliases = re.findall(r"(c\d+): object", query)
+            sizes.append(len(aliases))
+            if len(sizes) == 1:
+                raise RuntimeError("GitHub GraphQL stats unavailable: HTTP 502")
+            return {"repository": {
+                alias: {"additions": 2, "deletions": 1} for alias in aliases
+            }}
+
+        with mock.patch.object(update_readme, "graphql", side_effect=fake_graphql):
+            result = update_readme.fetch_commit_stats("owner/repo", oids, "secret")
+        self.assertEqual(result, (100, 50))
+        self.assertEqual(sizes, [40, 10, 40])
+
+    def test_rest_reads_retry_gateway_errors_then_fail(self):
+        failure = RuntimeError("GitHub /repos/o/r/compare unavailable: HTTP 502")
+        with (
+            mock.patch.object(update_readme, "gh",
+                              side_effect=[failure, (200, {"ok": True})]) as request,
+            mock.patch.object(update_readme.time, "sleep"),
+        ):
+            self.assertEqual(update_readme.gh_read("/x", "secret"), (200, {"ok": True}))
+        self.assertEqual(request.call_count, 2)
+        with (
+            mock.patch.object(update_readme, "gh", side_effect=[failure] * 4) as request,
+            mock.patch.object(update_readme.time, "sleep"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "unavailable: HTTP 502"):
+                update_readme.gh_read("/x", "secret")
+        self.assertEqual(request.call_count, 4)
+
+    def test_contributed_repository_timeout_uses_repositories_already_counted(self):
+        summary = {"user": {"id": "U_1", "contributionsCollection": {
+            "startedAt": "start", "endedAt": "end",
+            "contributionCalendar": {"totalContributions": 10},
+        }}}
+
+        def fake_graphql(query, _variables, _token, label):
+            if "repositoriesContributedTo" in query:
+                raise RuntimeError(f"GitHub GraphQL {label} unavailable: HTTP 504")
+            return summary
+
+        def fake_gh(path, _token):
+            if path == "/user":
+                return 200, {"followers": 9}
+            if path.startswith("/user/repos"):
+                return 200, [{"full_name": "me/owned"}]
+            if path.startswith("/search/issues"):
+                return 200, {"total_count": 10}
+            if path.endswith("/languages"):
+                return 200, {"Python": 100}
+            raise AssertionError(path)
+
+        with tempfile.TemporaryDirectory() as directory:
+            cache_path = Path(directory) / "loc.json"
+            update_readme.save_loc_cache(cache_path, {
+                "org/contributed": {"headOid": "head", "additions": 70, "deletions": 5},
+            })
+            with (
+                mock.patch.object(update_readme, "gh", side_effect=fake_gh),
+                mock.patch.object(update_readme, "graphql", side_effect=fake_graphql),
+                mock.patch.object(update_readme, "fetch_repo_head", return_value="head"),
+                mock.patch.object(update_readme, "fetch_repo_loc", return_value=(30, 1)),
+            ):
+                values = update_readme.fetch_stats("secret", loc_cache_path=cache_path)
+                # With nothing counted yet there is no stand-in: fail instead.
+                update_readme.save_loc_cache(cache_path, {})
+                with self.assertRaisesRegex(RuntimeError, "unavailable: HTTP 504"):
+                    update_readme.fetch_stats("secret", loc_cache_path=cache_path)
+        self.assertEqual(values["loc_add"], "100")
+        self.assertEqual(values["loc_del"], "6")
 
     def test_refresh_state_gates_same_day_fallback(self):
         with tempfile.TemporaryDirectory() as directory:

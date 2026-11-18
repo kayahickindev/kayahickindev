@@ -34,10 +34,22 @@ the source's public display precision. Freshness timestamps stay in
 
 GitHub activity includes private repositories. Lines added and removed sum the
 user's non-merge commits on code repositories' default branches. They describe
-historical changes, not the current codebase size. Repository-head caches avoid
-recounting unchanged histories. History requests start at 25 commits per page and
-shrink to 5 or 1 after persistent timeouts. Each completed repository is
-checkpointed before moving on. A later failure still prevents publishing partial card totals.
+historical changes, not the current codebase size. `loc_cache.json` keeps each
+repository's totals at a head commit. An unchanged head is reused. A new head
+counts only the commits since the cached one: the compare endpoint lists the
+range, and the user's non-merge commits in it are summed in batches of 40. A
+backlog longer than 2,000 commits is walked in steps, each ending on a commit
+that descends from the cached head, and the cache is saved after every step.
+When the cached head is no longer an ancestor (rewritten history), the
+repository is recounted from scratch, 25 commits per page, shrinking to 5 or 1 after
+persistent timeouts. Never go back to recounting whole histories on every new
+commit: that is what froze the card from 2026-10-31 to 2026-11-18.
+
+Each completed repository is checkpointed before moving on. A later failure
+still prevents publishing partial card totals, but the workflow commits the
+checkpoint so the next run resumes from it. The contributed-repositories lookup
+times out often on GitHub's side; when it stays unavailable, the repositories
+already in the cache stand in for it.
 `language_stats.json` uses GitHub-detected bytes from the same repository set.
 
 GitHub gateway failures may contain HTML or plain text instead of JSON. Preserve
