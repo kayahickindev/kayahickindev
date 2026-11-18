@@ -84,6 +84,22 @@ def gh(path, token, method="GET", body=None):
     return status, payload
 
 
+def gh_read(path, token, attempts=4):
+    """GET with bounded retries, for the paginated reads behind incremental LOC.
+
+    One gateway error among a few hundred compare pages should not cost the
+    whole refresh. Persistent failure still raises, so nothing partial ships.
+    """
+    for attempt in range(attempts):
+        try:
+            return gh(path, token)
+        except RuntimeError as exc:
+            if "unavailable: HTTP 5" not in str(exc) or attempt == attempts - 1:
+                raise
+            print(f"{exc}; retry {attempt + 2}/{attempts}")
+            time.sleep(3 + attempt * 3)
+
+
 def graphql(query, variables, token, label):
     for attempt in range(4):
         status, payload = gh(
@@ -303,23 +319,164 @@ def fetch_repo_loc(name, author_id, token):
     return adds, dels
 
 
+# GitHub's compare endpoint lists at most this many commits for one range.
+COMPARE_LIMIT = 10000
+COMPARE_PAGE = 100
+STATS_BATCH = 40
+
+
+def compare_page(name, base, head, token, page, per_page=COMPARE_PAGE):
+    _, payload = gh_read(
+        f"/repos/{name}/compare/{base}...{head}?per_page={per_page}&page={page}",
+        token,
+    )
+    if not isinstance(payload, dict) or not isinstance(payload.get("commits"), list):
+        raise RuntimeError(f"invalid compare response for {name} {base[:12]}...{head[:12]}")
+    return payload
+
+
+def commit_at_offset(name, head, token, offset):
+    """The commit `offset` entries behind `head` in GitHub's listing, or None."""
+    _, commits = gh_read(
+        f"/repos/{name}/commits?sha={head}&per_page=1&page={offset + 1}", token
+    )
+    if isinstance(commits, list) and commits:
+        return commits[0].get("sha")
+    return None
+
+
+def fetch_range_commits(name, base, head, token, depth=0):
+    """Every commit reachable from `head` but not from `base`.
+
+    Returns None when `base` is not an ancestor of `head` (rewritten history, a
+    deleted commit), which sends the caller back to a full recount. Ranges past
+    the compare limit are split at a midpoint M with base <= M <= head, so the
+    two halves are disjoint and together are exactly the range.
+    """
+    try:
+        first = compare_page(name, base, head, token, 1)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return None
+        raise
+    ahead, behind = first.get("ahead_by"), first.get("behind_by")
+    if not isinstance(ahead, int) or behind != 0:
+        return None
+    if ahead > COMPARE_LIMIT:
+        if depth >= 12:
+            return None
+        for nudge in range(5):
+            middle = commit_at_offset(name, head, token, ahead // 2 + nudge)
+            if not middle or middle in (base, head):
+                continue
+            older = fetch_range_commits(name, base, middle, token, depth + 1)
+            if older is None:
+                continue
+            newer = fetch_range_commits(name, middle, head, token, depth + 1)
+            if newer is None or len(older) + len(newer) != ahead:
+                continue
+            return older + newer
+        return None
+    commits = list(first["commits"])
+    page = 1
+    while len(commits) < ahead:
+        page += 1
+        batch = compare_page(name, base, head, token, page)["commits"]
+        if not batch:
+            break
+        commits.extend(batch)
+    if len(commits) != ahead or len({c["sha"] for c in commits}) != ahead:
+        return None
+    return commits
+
+
+def fetch_commit_stats(name, oids, token):
+    """Sum additions and deletions of specific commits, in shrinkable batches."""
+    owner, repo_name = name.split("/", 1)
+    adds = dels = 0
+    index = 0
+    size = STATS_BATCH
+    while index < len(oids):
+        batch = oids[index:index + size]
+        fields = " ".join(
+            f'c{i}: object(oid: "{oid}") {{ ... on Commit {{ additions deletions }} }}'
+            for i, oid in enumerate(batch)
+        )
+        try:
+            data = graphql(
+                "query($owner: String!, $name: String!) {"
+                f" repository(owner: $owner, name: $name) {{ {fields} }} }}",
+                {"owner": owner, "name": repo_name}, token,
+                f"commit stats for {name}",
+            )
+        except RuntimeError as exc:
+            if size > 1 and "unavailable: HTTP 50" in str(exc):
+                size = max(1, size // 4)
+                print(f"Reducing {name} commit-stats batch to {size} commits")
+                continue
+            raise
+        repository = data.get("repository") or {}
+        for i, oid in enumerate(batch):
+            commit = repository.get(f"c{i}")
+            if not isinstance(commit, dict) or "additions" not in commit:
+                raise RuntimeError(f"missing commit stats for {name}@{oid[:12]}")
+            adds += commit["additions"]
+            dels += commit["deletions"]
+        index += len(batch)
+        size = STATS_BATCH
+    return adds, dels
+
+
+def fetch_incremental_loc(name, author_id, token, base_oid, head_oid):
+    """Lines this user added and removed between two heads, or None.
+
+    Counts the same commits the full walk does: authored by the user, not a
+    merge. None means the range could not be listed exactly.
+    """
+    commits = fetch_range_commits(name, base_oid, head_oid, token)
+    if commits is None:
+        return None
+    mine = [
+        commit["sha"] for commit in commits
+        if (commit.get("author") or {}).get("node_id") == author_id
+        and len(commit.get("parents") or []) <= 1
+    ]
+    adds, dels = fetch_commit_stats(name, mine, token)
+    return adds, dels, len(commits), len(mine)
+
+
 def fetch_cached_repo_loc(name, author_id, token, loc_cache):
     head_oid = fetch_repo_head(name, token)
     if not head_oid:
         return None
     cached = loc_cache.get(name)
-    if (
+    usable = (
         isinstance(cached, dict)
-        and cached.get("headOid") == head_oid
+        and isinstance(cached.get("headOid"), str)
         and isinstance(cached.get("additions"), int)
         and isinstance(cached.get("deletions"), int)
-    ):
+    )
+    if usable and cached["headOid"] == head_oid:
         repo_adds = cached["additions"]
         repo_dels = cached["deletions"]
         print(f"LOC cache hit: {name}@{head_oid[:12]}")
     else:
-        repo_adds, repo_dels = fetch_repo_loc(name, author_id, token)
-        print(f"LOC cache refreshed: {name}@{head_oid[:12]}")
+        # Recounting a whole history on every new commit is what made the
+        # refresh outgrow its time limit. Count only what landed since the
+        # cached head; recount from scratch when that range is not exact.
+        delta = None
+        if usable:
+            delta = fetch_incremental_loc(
+                name, author_id, token, cached["headOid"], head_oid
+            )
+        if delta is not None:
+            repo_adds = cached["additions"] + delta[0]
+            repo_dels = cached["deletions"] + delta[1]
+            print(f"LOC cache advanced: {name}@{head_oid[:12]} "
+                  f"({delta[3]} of {delta[2]} new commits counted)")
+        else:
+            repo_adds, repo_dels = fetch_repo_loc(name, author_id, token)
+            print(f"LOC cache refreshed: {name}@{head_oid[:12]}")
     return repo_adds, repo_dels, {
         "headOid": head_oid,
         "additions": repo_adds,
@@ -353,11 +510,6 @@ def fetch_stats(token, loc_cache_path=None, language_stats_path=None):
             contributionCalendar { totalContributions }
           }
         }
-        viewer {
-          repositoriesContributedTo(first: 100, contributionTypes: [COMMIT]) {
-            nodes { nameWithOwner }
-          }
-        }
       }""", {"login": LOGIN}, token, "profile summary")
     collection = data["user"]["contributionsCollection"]
     author_id = data["user"]["id"]
@@ -367,13 +519,32 @@ def fetch_stats(token, loc_cache_path=None, language_stats_path=None):
         f"{collection['startedAt']} to {collection['endedAt']} = "
         f"{contribution_total:,}"
     )
-    contributed = data["viewer"]["repositoriesContributedTo"]
+    loc_cache = load_loc_cache(loc_cache_path)
+    # This lookup is slow on GitHub's side and times out often, which used to
+    # fail the whole refresh. It runs on its own, and when it stays unavailable
+    # the repositories already counted stand in for it.
+    try:
+        contributed_data = graphql("""
+          query {
+            viewer {
+              repositoriesContributedTo(first: 100, contributionTypes: [COMMIT]) {
+                nodes { nameWithOwner }
+              }
+            }
+          }""", {}, token, "contributed repositories")
+        contributed_names = [
+            node["nameWithOwner"]
+            for node in contributed_data["viewer"]["repositoriesContributedTo"]["nodes"]
+        ]
+    except RuntimeError as exc:
+        if "unavailable: HTTP 5" not in str(exc) or not loc_cache:
+            raise
+        contributed_names = list(loc_cache)
+        print(f"{exc}; using the {len(contributed_names)} repositories already counted")
 
     names = list(dict.fromkeys(
-        [r["full_name"] for r in owned]
-        + [n["nameWithOwner"] for n in contributed["nodes"]]
+        [r["full_name"] for r in owned] + contributed_names
     ))
-    loc_cache = load_loc_cache(loc_cache_path)
     refreshed_cache = {}
     language_totals = {}
     adds = dels = 0

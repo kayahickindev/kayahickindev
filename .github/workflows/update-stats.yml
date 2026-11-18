@@ -25,6 +25,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Refresh SVG stats
+        # Shorter than the job limit, so a slow run fails here and the
+        # checkpoint step below still has time to save what was counted.
+        timeout-minutes: 24
         env:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           REQUIRE_GITHUB_STATS: "1"
@@ -32,7 +35,18 @@ jobs:
           PROFILE_SITE_MAX_AGE_HOURS: "48"
           REFRESH_TRIGGER: ${{ github.event_name }}
           WRITE_REFRESH_STATE: "1"
-        run: python update_readme.py
+        # Unbuffered, so a run that is cut off still shows how far it got.
+        run: python -u update_readme.py
+      - name: Keep counted repositories when the refresh fails
+        # The cards only change on a complete refresh. The per-repository line
+        # counts are safe to keep, and the next run resumes from them instead
+        # of starting over.
+        if: ${{ failure() || cancelled() }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add loc_cache.json
+          git diff --cached --quiet || (git commit -m "chore: checkpoint line counts" && git push)
       - name: Rebuild the cards
         # Redraws both panels from the language totals the refresh just wrote,
         # carrying the fresh stat values over
