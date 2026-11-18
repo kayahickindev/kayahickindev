@@ -613,6 +613,10 @@ def fetch_stats(token, loc_cache_path=None, language_stats_path=None):
         f"{collection['startedAt']} to {collection['endedAt']} = "
         f"{contribution_total:,}"
     )
+    # A fork's bytes are mostly its upstream's code. Lines of code only count
+    # this user's commits, so forks stay in that total, but they would put
+    # languages on the bar that were never written here.
+    forks = {r["full_name"] for r in owned if r.get("fork")}
     loc_cache = load_loc_cache(loc_cache_path)
     # This lookup is slow on GitHub's side and times out often, which used to
     # fail the whole refresh. It runs on its own, and when it stays unavailable
@@ -647,8 +651,9 @@ def fetch_stats(token, loc_cache_path=None, language_stats_path=None):
         if not languages:
             print(f"skipping {name}: no GitHub-detected source languages")
             continue
-        for language, byte_count in languages.items():
-            language_totals[language] = language_totals.get(language, 0) + byte_count
+        if name not in forks:
+            for language, byte_count in languages.items():
+                language_totals[language] = language_totals.get(language, 0) + byte_count
         def checkpoint(entry, name=name):
             save_loc_cache(loc_cache_path, {**loc_cache, **refreshed_cache, name: entry})
 

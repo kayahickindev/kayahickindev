@@ -77,7 +77,10 @@ on the card: do not remove it when changing the readout. Regenerate it from
   refresh like the other values.
 - **Language bar** leaves out `EXCLUDED_LANGUAGES` (SQL dialects and HTML):
   database dumps and exported pages are not hand-written code, and PLpgSQL used
-  to lead the bar at 43%. `language_stats.json` still holds every language.
+  to lead the bar at 43%. `language_stats.json` still holds every language
+  from repositories that are not forks. A fork's bytes are its upstream's code
+  (the React Native fork alone was all of the C++), so forks count toward
+  lines of code, which only sums this user's commits, but not toward the bar.
 - **Downloads trend** draws the last 90 days of `metrics_history.json` where
   the leader dots would go, with the gain across that window. The product
   endpoint only serves the latest snapshot, so the refresh appends one point

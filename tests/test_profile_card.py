@@ -848,6 +848,41 @@ class ProfileCardTests(unittest.TestCase):
                 )
             )
 
+    def test_forks_count_toward_lines_but_not_the_language_bar(self):
+        summary = {"user": {"id": "U_1", "contributionsCollection": {
+            "startedAt": "start", "endedAt": "end",
+            "contributionCalendar": {"totalContributions": 10},
+        }}, "viewer": {"repositoriesContributedTo": {"nodes": []}}}
+
+        def fake_gh(path, _token):
+            if path == "/user":
+                return 200, {"followers": 9}
+            if path.startswith("/user/repos"):
+                return 200, [{"full_name": "me/app", "fork": False},
+                             {"full_name": "me/react-native", "fork": True}]
+            if path.startswith("/search/issues"):
+                return 200, {"total_count": 10}
+            if path == "/repos/me/app/languages":
+                return 200, {"Swift": 900}
+            if path == "/repos/me/react-native/languages":
+                return 200, {"C++": 5000, "Swift": 50}
+            raise AssertionError(path)
+
+        with tempfile.TemporaryDirectory() as directory:
+            languages_path = Path(directory) / "languages.json"
+            with (
+                mock.patch.object(update_readme, "gh", side_effect=fake_gh),
+                mock.patch.object(update_readme, "graphql", return_value=summary),
+                mock.patch.object(update_readme, "fetch_repo_head", return_value="head"),
+                mock.patch.object(update_readme, "fetch_repo_loc", return_value=(40, 5)),
+            ):
+                values = update_readme.fetch_stats(
+                    "secret", language_stats_path=languages_path
+                )
+            languages = json.loads(languages_path.read_text(encoding="utf-8"))
+        self.assertEqual(languages["languages"], [{"name": "Swift", "bytes": 900}])
+        self.assertEqual(values["loc_add"], "80")
+
     def test_uptime_counts_whole_years_months_and_days(self):
         cases = {
             date(2026, 1, 19): "22 years, 0 months, 0 days",
