@@ -322,6 +322,9 @@ def fetch_repo_loc(name, author_id, token):
 # GitHub's compare endpoint lists at most this many commits for one range.
 COMPARE_LIMIT = 10000
 COMPARE_PAGE = 100
+# A long backlog is walked this many commits at a time, saving after each step,
+# so a run that is cut off resumes from the last step instead of starting over.
+CHUNK_COMMITS = 2000
 STATS_BATCH = 40
 
 
@@ -335,6 +338,24 @@ def compare_page(name, base, head, token, page, per_page=COMPARE_PAGE):
     return payload
 
 
+def range_size(name, base, head, token):
+    """Commits reachable from `head` but not `base`, or None when not exact.
+
+    None covers a base that is gone (404) and a base that is not an ancestor
+    of `head`, which is what rewritten history looks like.
+    """
+    try:
+        probe = compare_page(name, base, head, token, 1, per_page=1)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return None
+        raise
+    ahead = probe.get("ahead_by")
+    if not isinstance(ahead, int) or ahead < 1 or probe.get("behind_by") != 0:
+        return None
+    return ahead
+
+
 def commit_at_offset(name, head, token, offset):
     """The commit `offset` entries behind `head` in GitHub's listing, or None."""
     _, commits = gh_read(
@@ -345,47 +366,40 @@ def commit_at_offset(name, head, token, offset):
     return None
 
 
-def fetch_range_commits(name, base, head, token, depth=0):
-    """Every commit reachable from `head` but not from `base`.
+def next_step(name, base, head, token):
+    """Where to advance to from `base`: (commit, range size), or None.
 
-    Returns None when `base` is not an ancestor of `head` (rewritten history, a
-    deleted commit), which sends the caller back to a full recount. Ranges past
-    the compare limit are split at a midpoint M with base <= M <= head, so the
-    two halves are disjoint and together are exactly the range.
+    Usually that is `head`. A backlog longer than one chunk stops at a commit M
+    partway there. M is taken from `head`'s own history and must have `base` as
+    an ancestor, so base..M and M..head are disjoint and together are exactly
+    base..head.
     """
-    try:
-        first = compare_page(name, base, head, token, 1)
-    except urllib.error.HTTPError as exc:
-        if exc.code == 404:
-            return None
-        raise
-    ahead, behind = first.get("ahead_by"), first.get("behind_by")
-    if not isinstance(ahead, int) or behind != 0:
+    ahead = range_size(name, base, head, token)
+    if ahead is None:
         return None
-    if ahead > COMPARE_LIMIT:
-        if depth >= 12:
-            return None
-        for nudge in range(5):
-            middle = commit_at_offset(name, head, token, ahead // 2 + nudge)
-            if not middle or middle in (base, head):
-                continue
-            older = fetch_range_commits(name, base, middle, token, depth + 1)
-            if older is None:
-                continue
-            newer = fetch_range_commits(name, middle, head, token, depth + 1)
-            if newer is None or len(older) + len(newer) != ahead:
-                continue
-            return older + newer
-        return None
-    commits = list(first["commits"])
-    page = 1
+    if ahead <= CHUNK_COMMITS:
+        return head, ahead
+    for nudge in range(5):
+        middle = commit_at_offset(name, head, token, ahead - CHUNK_COMMITS + nudge)
+        if not middle or middle in (base, head):
+            continue
+        size = range_size(name, base, middle, token)
+        if size is not None and size <= COMPARE_LIMIT:
+            return middle, size
+    return (head, ahead) if ahead <= COMPARE_LIMIT else None
+
+
+def fetch_range_commits(name, base, head, token, ahead):
+    """All `ahead` commits of base..head, or None if the listing is not exact."""
+    commits = []
+    page = 0
     while len(commits) < ahead:
         page += 1
         batch = compare_page(name, base, head, token, page)["commits"]
         if not batch:
             break
         commits.extend(batch)
-    if len(commits) != ahead or len({c["sha"] for c in commits}) != ahead:
+    if len(commits) != ahead or len({commit["sha"] for commit in commits}) != ahead:
         return None
     return commits
 
@@ -427,13 +441,13 @@ def fetch_commit_stats(name, oids, token):
     return adds, dels
 
 
-def fetch_incremental_loc(name, author_id, token, base_oid, head_oid):
-    """Lines this user added and removed between two heads, or None.
+def fetch_incremental_loc(name, author_id, token, base_oid, head_oid, ahead):
+    """Lines this user added and removed across one listed range, or None.
 
     Counts the same commits the full walk does: authored by the user, not a
     merge. None means the range could not be listed exactly.
     """
-    commits = fetch_range_commits(name, base_oid, head_oid, token)
+    commits = fetch_range_commits(name, base_oid, head_oid, token, ahead)
     if commits is None:
         return None
     mine = [
@@ -442,10 +456,41 @@ def fetch_incremental_loc(name, author_id, token, base_oid, head_oid):
         and len(commit.get("parents") or []) <= 1
     ]
     adds, dels = fetch_commit_stats(name, mine, token)
-    return adds, dels, len(commits), len(mine)
+    return adds, dels, len(mine)
 
 
-def fetch_cached_repo_loc(name, author_id, token, loc_cache):
+def advance_repo_loc(name, author_id, token, cached, head_oid, checkpoint=None):
+    """Bring cached totals up to `head_oid` by counting only the new commits.
+
+    Returns (additions, deletions), or None when the cached head cannot be
+    advanced exactly and the repository needs a full recount. `checkpoint`
+    receives the cache entry after each intermediate step.
+    """
+    adds, dels, base = cached["additions"], cached["deletions"], cached["headOid"]
+    listed = counted = 0
+    while base != head_oid:
+        step = next_step(name, base, head_oid, token)
+        if step is None:
+            return None
+        target, ahead = step
+        delta = fetch_incremental_loc(name, author_id, token, base, target, ahead)
+        if delta is None:
+            return None
+        adds += delta[0]
+        dels += delta[1]
+        listed += ahead
+        counted += delta[2]
+        base = target
+        if base != head_oid:
+            if checkpoint:
+                checkpoint({"headOid": base, "additions": adds, "deletions": dels})
+            print(f"LOC cache checkpoint: {name}@{base[:12]} ({listed:,} commits in)")
+    print(f"LOC cache advanced: {name}@{head_oid[:12]} "
+          f"({counted:,} of {listed:,} new commits counted)")
+    return adds, dels
+
+
+def fetch_cached_repo_loc(name, author_id, token, loc_cache, checkpoint=None):
     head_oid = fetch_repo_head(name, token)
     if not head_oid:
         return None
@@ -464,16 +509,13 @@ def fetch_cached_repo_loc(name, author_id, token, loc_cache):
         # Recounting a whole history on every new commit is what made the
         # refresh outgrow its time limit. Count only what landed since the
         # cached head; recount from scratch when that range is not exact.
-        delta = None
+        advanced = None
         if usable:
-            delta = fetch_incremental_loc(
-                name, author_id, token, cached["headOid"], head_oid
+            advanced = advance_repo_loc(
+                name, author_id, token, cached, head_oid, checkpoint
             )
-        if delta is not None:
-            repo_adds = cached["additions"] + delta[0]
-            repo_dels = cached["deletions"] + delta[1]
-            print(f"LOC cache advanced: {name}@{head_oid[:12]} "
-                  f"({delta[3]} of {delta[2]} new commits counted)")
+        if advanced is not None:
+            repo_adds, repo_dels = advanced
         else:
             repo_adds, repo_dels = fetch_repo_loc(name, author_id, token)
             print(f"LOC cache refreshed: {name}@{head_oid[:12]}")
@@ -555,7 +597,10 @@ def fetch_stats(token, loc_cache_path=None, language_stats_path=None):
             continue
         for language, byte_count in languages.items():
             language_totals[language] = language_totals.get(language, 0) + byte_count
-        repo_loc = fetch_cached_repo_loc(name, author_id, token, loc_cache)
+        def checkpoint(entry, name=name):
+            save_loc_cache(loc_cache_path, {**loc_cache, **refreshed_cache, name: entry})
+
+        repo_loc = fetch_cached_repo_loc(name, author_id, token, loc_cache, checkpoint)
         if not repo_loc:
             print(f"skipping {name}: no default-branch commit")
             continue

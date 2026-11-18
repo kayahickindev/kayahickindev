@@ -569,8 +569,8 @@ class ProfileCardTests(unittest.TestCase):
                 update_readme, "fetch_repo_head", return_value="new-head"
             ),
             mock.patch.object(
-                update_readme, "fetch_incremental_loc", return_value=None
-            ) as incremental,
+                update_readme, "advance_repo_loc", return_value=None
+            ) as advance,
             mock.patch.object(
                 update_readme, "fetch_repo_loc", return_value=(150, 30)
             ) as fetch_repo_loc,
@@ -581,18 +581,17 @@ class ProfileCardTests(unittest.TestCase):
 
         self.assertEqual(result[:2], (150, 30))
         self.assertEqual(result[2]["headOid"], "new-head")
-        incremental.assert_called_once_with(
-            "kayahickindev/example", "U_1", "secret", "old-head", "new-head"
-        )
+        advance.assert_called_once()
         fetch_repo_loc.assert_called_once()
 
     def test_changed_repository_counts_only_new_commits(self):
         cache = {"owner/repo": {"headOid": "old", "additions": 120, "deletions": 20}}
         with (
             mock.patch.object(update_readme, "fetch_repo_head", return_value="new"),
+            mock.patch.object(update_readme, "next_step", return_value=("new", 4)),
             mock.patch.object(
-                update_readme, "fetch_incremental_loc", return_value=(30, 10, 4, 3)
-            ),
+                update_readme, "fetch_incremental_loc", return_value=(30, 10, 3)
+            ) as incremental,
             mock.patch.object(update_readme, "fetch_repo_loc") as full_recount,
         ):
             result = update_readme.fetch_cached_repo_loc(
@@ -601,6 +600,7 @@ class ProfileCardTests(unittest.TestCase):
         self.assertEqual(result, (150, 30, {
             "headOid": "new", "additions": 150, "deletions": 30,
         }))
+        incremental.assert_called_once_with("owner/repo", "U_1", "secret", "old", "new", 4)
         full_recount.assert_not_called()
 
     @staticmethod
@@ -634,31 +634,38 @@ class ProfileCardTests(unittest.TestCase):
             mock.patch.object(update_readme, "graphql", side_effect=fake_graphql),
         ):
             result = update_readme.fetch_incremental_loc(
-                "owner/repo", "U_1", "secret", "old", "new"
+                "owner/repo", "U_1", "secret", "old", "new", 5
             )
-        self.assertEqual(result, (15, 5, 5, 2))
+        self.assertEqual(result, (15, 5, 2))
         self.assertEqual(len(queries), 1)
         self.assertNotIn("b2", queries[0])
         self.assertNotIn("c3", queries[0])
 
     def test_rewritten_or_missing_base_falls_back_to_full_recount(self):
+        cached = {"headOid": "old", "additions": 1, "deletions": 1}
         with mock.patch.object(update_readme, "gh", return_value=(200, {
             "ahead_by": 3, "behind_by": 2, "commits": [],
         })):
-            self.assertIsNone(update_readme.fetch_incremental_loc(
-                "owner/repo", "U_1", "secret", "old", "new"
+            self.assertIsNone(update_readme.advance_repo_loc(
+                "owner/repo", "U_1", "secret", cached, "new"
             ))
         missing = urllib.error.HTTPError("https://api.github.com/x", 404,
                                          "Not Found", {}, io.BytesIO(b"{}"))
         with mock.patch.object(update_readme, "gh", side_effect=missing):
-            self.assertIsNone(update_readme.fetch_incremental_loc(
-                "owner/repo", "U_1", "secret", "old", "new"
+            self.assertIsNone(update_readme.advance_repo_loc(
+                "owner/repo", "U_1", "secret", cached, "new"
+            ))
+        # A listing that comes back short is not exact either.
+        with mock.patch.object(update_readme, "gh", return_value=(200, {
+            "ahead_by": 3, "behind_by": 0, "commits": [],
+        })):
+            self.assertIsNone(update_readme.advance_repo_loc(
+                "owner/repo", "U_1", "secret", cached, "new"
             ))
 
-    def test_range_past_the_compare_limit_is_split_exactly(self):
-        # A linear history c1..c7 on top of `base`; the limit forces splits.
-        order = ["base"] + [f"c{i}" for i in range(1, 8)]
-
+    def linear_history(self, order, side_branch=()):
+        """A fake GitHub over a linear history; `side_branch` commits do not
+        descend from `base`, the way an old branch merged late does not."""
         def fake_gh(path, _token):
             compare = re.match(
                 r"/repos/owner/repo/compare/(\w+)\.\.\.(\w+)\?per_page=(\d+)&page=(\d+)",
@@ -668,9 +675,9 @@ class ProfileCardTests(unittest.TestCase):
                 base, head = compare.group(1), compare.group(2)
                 per_page, page = int(compare.group(3)), int(compare.group(4))
                 span = order[order.index(base) + 1:order.index(head) + 1]
-                listed = span[:3]  # the endpoint stops listing at the limit
-                chunk = listed[(page - 1) * per_page:page * per_page]
-                return 200, {"ahead_by": len(span), "behind_by": 0,
+                chunk = span[(page - 1) * per_page:page * per_page]
+                return 200, {"ahead_by": len(span),
+                             "behind_by": 1 if head in side_branch else 0,
                              "commits": [self.range_commit(sha) for sha in chunk]}
             listing = re.match(
                 r"/repos/owner/repo/commits\?sha=(\w+)&per_page=1&page=(\d+)", path
@@ -679,16 +686,58 @@ class ProfileCardTests(unittest.TestCase):
                 index = order.index(listing.group(1)) - (int(listing.group(2)) - 1)
                 return 200, [{"sha": order[index]}] if index >= 0 else []
             raise AssertionError(path)
+        return fake_gh
+
+    def test_long_backlog_advances_in_checkpointed_chunks(self):
+        order = ["base"] + [f"c{i}" for i in range(1, 8)]
+        saved = []
+
+        def fake_graphql(query, _variables, _token, _label):
+            return {"repository": {
+                alias: {"additions": 10, "deletions": 1}
+                for alias in re.findall(r"(c\d+): object", query)
+            }}
 
         with (
-            mock.patch.object(update_readme, "COMPARE_LIMIT", 3),
+            mock.patch.object(update_readme, "CHUNK_COMMITS", 3),
             mock.patch.object(update_readme, "COMPARE_PAGE", 2),
-            mock.patch.object(update_readme, "gh", side_effect=fake_gh),
+            mock.patch.object(update_readme, "gh", side_effect=self.linear_history(order)),
+            mock.patch.object(update_readme, "graphql", side_effect=fake_graphql),
         ):
-            commits = update_readme.fetch_range_commits(
-                "owner/repo", "base", "c7", "secret"
+            result = update_readme.advance_repo_loc(
+                "owner/repo", "U_1", "secret",
+                {"headOid": "base", "additions": 100, "deletions": 50}, "c7",
+                saved.append,
             )
-        self.assertEqual([c["sha"] for c in commits], order[1:])
+        # Seven commits, each counted once across the three steps.
+        self.assertEqual(result, (170, 57))
+        self.assertEqual(saved, [
+            {"headOid": "c3", "additions": 130, "deletions": 53},
+            {"headOid": "c6", "additions": 160, "deletions": 56},
+        ])
+
+    def test_chunk_stop_must_descend_from_the_cached_head(self):
+        order = ["base"] + [f"c{i}" for i in range(1, 8)]
+        with (
+            mock.patch.object(update_readme, "CHUNK_COMMITS", 3),
+            mock.patch.object(update_readme, "gh",
+                              side_effect=self.linear_history(order, side_branch=("c3",))),
+        ):
+            # c3 would be the natural stop but does not contain `base`.
+            self.assertEqual(
+                update_readme.next_step("owner/repo", "base", "c7", "secret"),
+                ("c2", 2),
+            )
+        with (
+            mock.patch.object(update_readme, "CHUNK_COMMITS", 3),
+            mock.patch.object(update_readme, "COMPARE_LIMIT", 5),
+            mock.patch.object(update_readme, "gh", side_effect=self.linear_history(
+                order, side_branch=tuple(order[1:7]))),
+        ):
+            # No usable stop and the whole range is past the listing limit.
+            self.assertIsNone(
+                update_readme.next_step("owner/repo", "base", "c7", "secret")
+            )
 
     def test_commit_stats_batch_shrinks_after_gateway_timeouts(self):
         oids = [f"{i:040x}" for i in range(50)]

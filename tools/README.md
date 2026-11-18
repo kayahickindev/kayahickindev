@@ -38,9 +38,10 @@ historical changes, not the current codebase size. `loc_cache.json` keeps each
 repository's totals at a head commit. An unchanged head is reused. A new head
 counts only the commits since the cached one: the compare endpoint lists the
 range, and the user's non-merge commits in it are summed in batches of 40. A
-range past the endpoint's 10,000-commit limit is split at a midpoint. When the
-cached head is no longer an ancestor (rewritten history), the repository is
-recounted from scratch, 25 commits per page, shrinking to 5 or 1 after
+backlog longer than 2,000 commits is walked in steps, each ending on a commit
+that descends from the cached head, and the cache is saved after every step.
+When the cached head is no longer an ancestor (rewritten history), the
+repository is recounted from scratch, 25 commits per page, shrinking to 5 or 1 after
 persistent timeouts. Never go back to recounting whole histories on every new
 commit: that is what froze the card from 2026-10-31 to 2026-11-18.
 
