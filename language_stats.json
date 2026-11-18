@@ -1,59 +1,59 @@
 {
   "languages": [
     {
-      "bytes": 161950654,
+      "bytes": 180670348,
       "name": "PLpgSQL"
     },
     {
-      "bytes": 73438492,
+      "bytes": 93621979,
       "name": "TypeScript"
     },
     {
-      "bytes": 52383319,
-      "name": "Swift"
-    },
-    {
-      "bytes": 41924647,
+      "bytes": 72975529,
       "name": "JavaScript"
     },
     {
-      "bytes": 15986010,
+      "bytes": 63139950,
+      "name": "Swift"
+    },
+    {
+      "bytes": 17407241,
       "name": "HTML"
+    },
+    {
+      "bytes": 9865016,
+      "name": "Python"
     },
     {
       "bytes": 7103663,
       "name": "C++"
     },
     {
-      "bytes": 5567530,
-      "name": "Python"
-    },
-    {
-      "bytes": 5152715,
-      "name": "CSS"
-    },
-    {
-      "bytes": 4828375,
+      "bytes": 5063568,
       "name": "Kotlin"
+    },
+    {
+      "bytes": 4127893,
+      "name": "CSS"
     },
     {
       "bytes": 1986406,
       "name": "Objective-C++"
     },
     {
-      "bytes": 1382698,
+      "bytes": 1805390,
       "name": "Shell"
     },
     {
-      "bytes": 1069558,
+      "bytes": 1045516,
       "name": "Objective-C"
     },
     {
-      "bytes": 636298,
+      "bytes": 632426,
       "name": "Ruby"
     },
     {
-      "bytes": 354549,
+      "bytes": 362564,
       "name": "Java"
     },
     {
@@ -69,20 +69,12 @@
       "name": "Metal"
     },
     {
-      "bytes": 10293,
-      "name": "Makefile"
-    },
-    {
-      "bytes": 1223,
-      "name": "Dockerfile"
-    },
-    {
-      "bytes": 523,
-      "name": "Rich Text Format"
-    },
-    {
       "bytes": 327,
       "name": "Smarty"
+    },
+    {
+      "bytes": 173,
+      "name": "Dockerfile"
     }
   ],
   "version": 1
