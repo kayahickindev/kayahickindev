@@ -7,7 +7,7 @@ import unittest
 import urllib.error
 import re
 import xml.etree.ElementTree as ET
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from unittest import mock
 
@@ -94,6 +94,14 @@ class ProfileCardTests(unittest.TestCase):
             self.assertEqual(art.count("<tspan"), 412, name)
             self.assertGreater(len(re.sub(r"<[^>]+>|\s", "", art)), 20000, name)
             self.assertIn('id="downloads_data"', svg)
+            self.assertRegex(svg, r'id="age_data">\d+ years?, \d+ months?, \d+ days?<')
+            # Trend line, load animation and cursor, with a reduced-motion opt-out.
+            self.assertRegex(svg, r'id="trend_data">\+[\d,]+<')
+            self.assertIn('<polyline id="trend_line"', svg)
+            self.assertIn('<g class="cover">', svg)
+            self.assertIn('class="cursor"', svg)
+            self.assertIn("@keyframes reveal", svg)
+            self.assertIn("prefers-reduced-motion: reduce", svg)
             self.assertIn('id="paid_data"', svg)
             self.assertIn('id="arr_data"', svg)
             self.assertIn('id="actions_data"', svg)
@@ -175,7 +183,7 @@ class ProfileCardTests(unittest.TestCase):
     def test_cards_scale_instead_of_clipping(self):
         for name in ("dark_mode.svg", "light_mode.svg"):
             root = ET.parse(ROOT / name).getroot()
-            self.assertEqual(root.attrib.get("viewBox"), "0 0 985 472", name)
+            self.assertEqual(root.attrib.get("viewBox"), "0 0 985 545", name)
 
     def test_language_bar_segments_fill_the_track(self):
         totals = json.loads(
@@ -187,12 +195,19 @@ class ProfileCardTests(unittest.TestCase):
             self.assertIn('clip-path="url(#barClip)"', svg)
             group = svg.split('<g clip-path="url(#barClip)">')[1].split("</g>")[0]
             segments = re.findall(
-                r'<rect x="([\d.]+)" y="404" width="([\d.]+)"', group
+                r'<rect x="([\d.]+)" y="464" width="([\d.]+)"', group
             )
             self.assertGreaterEqual(len(segments), 2, name)
             covered = sum(float(width) for _, width in segments)
-            self.assertAlmostEqual(covered, 642.0, delta=0.5, msg=name)
-            self.assertIn(totals["languages"][0]["name"], svg, name)
+            self.assertAlmostEqual(covered, 258.0, delta=0.5, msg=name)
+            # Database dumps and exported pages stay out of the bar.
+            legend_names = re.findall(r'<text x="[\d.]+" y="\d+">([^<]+) <tspan', svg)
+            self.assertTrue(legend_names, name)
+            for excluded in ("PLpgSQL", "HTML"):
+                self.assertNotIn(excluded, legend_names, name)
+            hand_written = [entry["name"] for entry in totals["languages"]
+                            if entry["name"] not in ("PLpgSQL", "HTML")]
+            self.assertEqual(legend_names[0], hand_written[0], name)
 
     def test_widest_readout_line_stays_inside_the_card(self):
         """The lines-of-code row is the one that outgrows the panel.
@@ -832,6 +847,63 @@ class ProfileCardTests(unittest.TestCase):
                     state_path, today=date(2026, 7, 15)
                 )
             )
+
+    def test_uptime_counts_whole_years_months_and_days(self):
+        cases = {
+            date(2026, 1, 19): "22 years, 0 months, 0 days",
+            date(2026, 2, 20): "22 years, 1 month, 1 day",
+            date(2026, 3, 1): "22 years, 1 month, 10 days",
+            date(2026, 11, 18): "22 years, 9 months, 30 days",
+            date(2027, 1, 18): "22 years, 11 months, 30 days",
+            date(2028, 3, 1): "24 years, 1 month, 11 days",
+        }
+        for today, expected in cases.items():
+            self.assertEqual(update_readme.uptime_string(today), expected, today)
+
+    def test_metric_history_keeps_one_point_per_day(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "history.json"
+            update_readme.record_metric_history(path, "2026-11-17T05:00:00.000Z", "100")
+            update_readme.record_metric_history(path, "2026-11-18T05:00:00.000Z", "140")
+            update_readme.record_metric_history(path, "2026-11-18T23:00:00.000Z", "150")
+            history = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(history["downloads"], [
+                {"date": "2026-11-17", "value": 100},
+                {"date": "2026-11-18", "value": 150},
+            ])
+            # A damaged file starts over instead of failing the refresh.
+            path.write_text("not json", encoding="utf-8")
+            update_readme.record_metric_history(path, "2026-11-19T05:00:00.000Z", "160")
+            history = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(history["downloads"], [{"date": "2026-11-19", "value": 160}])
+
+    def test_trend_row_reports_the_gain_across_its_window(self):
+        with tempfile.TemporaryDirectory() as directory:
+            history = Path(directory) / "history.json"
+            # 10 a day for 200 days: the 90-day window opens on an interpolated
+            # value even though no point lands exactly on its first day.
+            points = [
+                {"date": (date(2026, 1, 1) + timedelta(days=day)).isoformat(),
+                 "value": 1000 + day * 10}
+                for day in range(0, 201, 4)
+            ]
+            history.write_text(json.dumps({"version": 1, "downloads": points}),
+                               encoding="utf-8")
+            subprocess.run(
+                [sys.executable, str(ROOT / "tools" / "build_svg.py"),
+                 "--output-dir", directory, "--history", str(history)],
+                check=True, capture_output=True, cwd=ROOT,
+            )
+            svg = (Path(directory) / "dark_mode.svg").read_text(encoding="utf-8")
+        self.assertIn("Downloads (90d)", svg)
+        self.assertIn('id="trend_data">+900<', svg)
+        line = re.search(r'<polyline id="trend_line" points="([^"]+)"', svg).group(1)
+        xs = [float(pair.split(",")[0]) for pair in line.split()]
+        ys = [float(pair.split(",")[1]) for pair in line.split()]
+        self.assertEqual(xs, sorted(xs))
+        self.assertEqual(ys, sorted(ys, reverse=True))
+        self.assertGreater(min(xs), 318)
+        self.assertLess(max(xs), 985)
 
     def test_svg_value_update_preserves_line_width(self):
         source = ROOT / "dark_mode.svg"
