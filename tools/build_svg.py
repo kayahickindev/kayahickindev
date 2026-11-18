@@ -2,31 +2,41 @@
 import argparse
 import json
 import re
+import sys
 import xml.etree.ElementTree as ET
+from datetime import date, timedelta
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
+sys.path.insert(0, str(ROOT))
+from update_readme import uptime_string  # noqa: E402
 
-CARD_W, CARD_H = 985, 472
+CARD_W, CARD_H = 985, 545
 
-# ---- left column: the stipple portrait ----
+# ---- left column: the stipple portrait, then the language bar ----
 COLS, ROWS = 430, 412
-ART_X, ART_Y0 = 20, 30
+ART_X, ART_Y0 = 20, 26
 ART_FS, ART_ADVANCE, ART_LINE_H = 1, 0.6, 1.0
 ART_W = COLS * ART_ADVANCE
+# The portrait is uncovered top to bottom when the card loads.
+REVEAL_SECONDS, REVEAL_STEPS, REVEAL_DELAY = 2.6, 52, 0.25
 
-# ---- right column: the terminal readout, then the language bar ----
+BAR_X, BAR_Y, BAR_W, BAR_H = ART_X, 464, ART_W, 9
+LEGEND_FS = 10.5
+LEGEND_COLS = (ART_X, ART_X + 135)
+LEGEND_ROWS = (493, 512, 531)
+LEGEND_SLOTS = len(LEGEND_COLS) * len(LEGEND_ROWS)
+
+# ---- right column: the terminal readout, ending on a live prompt ----
 WIDTH = 63
 X_RIGHT = 318
 FS = 17
-LINE_H = 23
-Y0 = 36
-BAR_X, BAR_Y, BAR_W, BAR_H = X_RIGHT, 404, 642, 9
-LEGEND_FS = 11
-LEGEND_COLS = (X_RIGHT, X_RIGHT + 220, X_RIGHT + 440)
-LEGEND_ROWS = (435, 456)
-LEGEND_SLOTS = len(LEGEND_COLS) * len(LEGEND_ROWS)
+CHAR_W = FS * 0.6
+LINE_H = 25
+Y0 = 40
+PROMPT = "kaya@myfutureself"
+TREND_DAYS = 90
 
 # GitHub linguist colours, so the bar matches what each repo page shows.
 LANGUAGE_COLORS = {
@@ -39,6 +49,10 @@ LANGUAGE_COLORS = {
     "Makefile": "#427819", "Vim Script": "#199f4b", "Handlebars": "#f7931e",
 }
 OTHER_COLOR = "#8b949e"
+# Bytes of database dumps and exported pages say nothing about what is written
+# by hand, and at 43% PLpgSQL used to lead the bar. They stay in
+# language_stats.json; only the bar leaves them out.
+EXCLUDED_LANGUAGES = {"PLpgSQL", "PLSQL", "TSQL", "SQL", "HTML"}
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--art-dark", type=Path, default=HERE / "ascii_art_dark.txt")
@@ -46,6 +60,7 @@ parser.add_argument("--art-light", type=Path, default=HERE / "ascii_art_light.tx
 parser.add_argument("--output-dir", type=Path, default=ROOT)
 parser.add_argument("--stats-from", type=Path, default=ROOT / "dark_mode.svg")
 parser.add_argument("--languages", type=Path, default=ROOT / "language_stats.json")
+parser.add_argument("--history", type=Path, default=ROOT / "metrics_history.json")
 args = parser.parse_args()
 
 def read_art(path):
@@ -69,6 +84,7 @@ LIGHT = dict(bg="#fffefe", fg="#24292f", art="#57606a", key="#953800",
 
 # ---- right-column content ----
 ID_TO_STAT = {
+    "age_data": "age",
     "downloads_data": "downloads", "paid_data": "paid",
     "arr_data": "arr", "actions_data": "actions",
     "rating_data": "rating", "reviews_data": "reviews",
@@ -81,6 +97,9 @@ for element in ET.parse(args.stats_from).getroot().iter():
     if stat and element.text:
         STATS[stat] = element.text
 
+# Uptime is a date sum, not a fetched number, so a card that predates the row
+# can still be rebuilt. Every refresh records the current value.
+STATS.setdefault("age", uptime_string())
 missing = set(ID_TO_STAT.values()) - STATS.keys()
 if missing:
     raise RuntimeError(f"Refresh profile data before building: missing {sorted(missing)}")
@@ -96,7 +115,8 @@ def load_languages(path):
     if not path.exists():
         return []
     payload = json.loads(path.read_text(encoding="utf-8"))
-    entries = payload.get("languages") or []
+    entries = [entry for entry in payload.get("languages") or []
+               if entry["name"] not in EXCLUDED_LANGUAGES]
     total = sum(entry["bytes"] for entry in entries)
     if total <= 0:
         return []
@@ -168,8 +188,79 @@ def line_kv2(n1, v1, id1, n2, v2, id2):
     return kv([(k1, l1, esc(v1), len(v1), id1), (k2, l2, esc(v2), len(v2), id2)])
 
 
+def load_trend(path, days=TREND_DAYS):
+    """Downloads over the last `days` days as (points, gained, span_days).
+
+    Points are (0..1 across the window, value). The window opens on a value
+    interpolated at its first day, so the gain is the change across the whole
+    window and not from whichever refresh happened to land first inside it.
+    """
+    if not path.exists():
+        return None
+    series = sorted(
+        (date.fromisoformat(point["date"]), point["value"])
+        for point in json.loads(path.read_text(encoding="utf-8")).get("downloads", [])
+    )
+    if len(series) < 2:
+        return None
+    end = series[-1][0]
+    start = end - timedelta(days=days)
+    inside = [point for point in series if point[0] >= start]
+    before = [point for point in series if point[0] < start]
+    if before and inside and inside[0][0] > start:
+        (d0, v0), (d1, v1) = before[-1], inside[0]
+        share = (start - d0).days / (d1 - d0).days
+        inside.insert(0, (start, round(v0 + (v1 - v0) * share)))
+    if len(inside) < 2:
+        return None
+    first = inside[0][0]
+    span = (end - first).days
+    points = [((day - first).days / span, value) for day, value in inside]
+    return points, inside[-1][1] - inside[0][1], span
+
+
+TREND = load_trend(args.history)
+SPARK_H = 16
+
+
+def trend_row():
+    """`. Downloads (90d): <sparkline> +47,000`, the line drawn where dots go."""
+    points, gained, span = TREND
+    name = f"Downloads ({span}d)"
+    value = f"{gained:+,}"
+    kmk, klen = key(name)
+    gap = WIDTH - (2 + klen + 1 + len(value))
+    assert gap >= 12, gap
+    text = (f'<tspan x="{X_RIGHT}" y="{{y}}" class="cc">. </tspan>{kmk}:'
+            f'{" " * gap}<tspan class="addColor" id="trend_data">{esc(value)}</tspan>')
+    # The line spans the gap, one character clear of the key and the value.
+    return text, (2 + klen + 2) * CHAR_W, (gap - 2) * CHAR_W
+
+
+def trend_markup(pal, y):
+    """The sparkline itself: a soft area, the line, and a dot on today."""
+    if not TREND:
+        return []
+    points, _, _ = TREND
+    _, offset, width = trend_row()
+    low = min(value for _, value in points)
+    high = max(value for _, value in points)
+    rise = (high - low) or 1
+    x0, base = X_RIGHT + offset, y + 1
+    xy = [(x0 + t * width, base - (value - low) / rise * SPARK_H) for t, value in points]
+    line = " ".join(f"{x:.1f},{yy:.1f}" for x, yy in xy)
+    area = f"{x0:.1f},{base:.1f} {line} {x0 + width:.1f},{base:.1f}"
+    return [
+        f'<polygon points="{area}" fill="{pal["value"]}" opacity="0.14"/>',
+        f'<polyline id="trend_line" points="{line}" fill="none" stroke="{pal["value"]}" '
+        f'stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>',
+        f'<circle cx="{xy[-1][0]:.1f}" cy="{xy[-1][1]:.1f}" r="2.6" fill="{pal["add"]}"/>',
+    ]
+
+
 rows = [
     header("Engineering"),
+    line_kv("Uptime", STATS["age"], "age_data"),
     line_kv("Platforms", "iOS, Android, Web"),
     line_kv("Languages", "Swift, TypeScript, Python"),
     line_kv("Frameworks", "SwiftUI, React Native, Next.js"),
@@ -182,6 +273,7 @@ rows = [
              "Actions", STATS["actions"], "actions_data"),
     line_kv2("Rating", STATS["rating"], "rating_data",
              "Ratings", STATS["reviews"], "reviews_data"),
+    trend_row()[0] if TREND else None,
     None,
     header("GitHub"),
     line_kv("PRs merged", STATS["prs"], "pr_data"),
@@ -189,10 +281,52 @@ rows = [
     line_kv("Lines added", STATS["loc_add"], "loc_add", "addColor"),
     line_kv("Lines removed", STATS["loc_del"], "loc_del", "delColor"),
 ]
+TREND_ROW = rows.index(trend_row()[0]) if TREND else None
+# One blank line under the readout, then the prompt the cursor blinks on.
+PROMPT_Y = Y0 + (len(rows) + 1) * LINE_H
+
+
+def portrait_markup(pal):
+    """The portrait, under a cover that slides away to draw it in on load.
+
+    The cover's resting position is off the portrait, so anything that does not
+    run the animation (and anyone asking for reduced motion) sees the finished
+    picture. A fixed clip keeps the moving cover inside the portrait's box.
+    """
+    top, height = ART_Y0 - 2, ROWS + 3
+    art_lines = read_art(pal["art_source"])
+    out = [f'<text x="{ART_X}" y="{ART_Y0}" fill="{pal["art"]}" '
+           f'font-size="{ART_FS}px" class="ascii">']
+    for i in range(ROWS):
+        y = ART_Y0 + i * ART_LINE_H
+        out.append(f'<tspan x="{ART_X}" y="{y}">{esc(art_lines[i])}</tspan>')
+    out.append("</text>")
+    out.append(f'<clipPath id="artClip"><rect x="{ART_X - 1}" y="{top}" '
+               f'width="{ART_W + 2}" height="{height}"/></clipPath>')
+    out.append('<g clip-path="url(#artClip)"><g class="cover">')
+    out.append(f'<rect x="{ART_X - 1}" y="{top}" width="{ART_W + 2}" '
+               f'height="{height}" fill="{pal["bg"]}"/>')
+    out.append(f'<rect x="{ART_X - 1}" y="{top}" width="{ART_W + 2}" height="1.5" '
+               f'fill="{pal["value"]}" opacity="0.85"/>')
+    out.append("</g></g>")
+    return out
+
+
+def prompt_markup(pal):
+    """`kaya@myfutureself:~$` with a block cursor that blinks."""
+    cursor_x = X_RIGHT + (len(PROMPT) + 4) * CHAR_W
+    return [
+        f'<text x="{X_RIGHT}" y="{PROMPT_Y}" fill="{pal["fg"]}">'
+        f'<tspan class="addColor">{esc(PROMPT)}</tspan>'
+        f'<tspan class="cc">:</tspan><tspan class="value">~</tspan>'
+        f'<tspan class="cc">$</tspan></text>',
+        f'<rect class="cursor" x="{cursor_x:.1f}" y="{PROMPT_Y - FS + 3}" '
+        f'width="{CHAR_W:.1f}" height="{FS + 1}" fill="{pal["fg"]}"/>',
+    ]
 
 
 def language_markup(pal):
-    """Rounded segmented bar plus a three-column legend, clipped to the bar."""
+    """Rounded segmented bar plus a two-column legend, clipped to the bar."""
     if not LANGUAGES:
         return []
     out = [
@@ -244,16 +378,19 @@ size-adjust: 109%;
 .delColor {{fill: {pal['dele']};}}
 .cc {{fill: {pal['cc']};}}
 text, tspan {{white-space: pre;}}
+.cover {{transform: translateY({ROWS + 4}px);
+animation: reveal {REVEAL_SECONDS}s steps({REVEAL_STEPS}) {REVEAL_DELAY}s backwards;}}
+@keyframes reveal {{from {{transform: translateY(0);}}}}
+.cursor {{animation: blink 1.2s steps(1) infinite;}}
+@keyframes blink {{50% {{opacity: 0;}}}}
+@media (prefers-reduced-motion: reduce) {{.cover, .cursor {{animation: none;}}}}
 </style>""")
     out.append(f'<rect width="{CARD_W}px" height="{CARD_H}px" fill="{pal["bg"]}" rx="15"/>')
-    art_lines = read_art(pal["art_source"])
-    out.append(f'<text x="{ART_X}" y="{ART_Y0}" fill="{pal["art"]}" '
-               f'font-size="{ART_FS}px" class="ascii">')
-    for i in range(ROWS):
-        y = ART_Y0 + i * ART_LINE_H
-        out.append(f'<tspan x="{ART_X}" y="{y}">{esc(art_lines[i])}</tspan>')
-    out.append("</text>")
+    out.extend(portrait_markup(pal))
     out.extend(language_markup(pal))
+    if TREND:
+        out.extend(trend_markup(pal, Y0 + TREND_ROW * LINE_H))
+    out.extend(prompt_markup(pal))
     out.append(f'<text x="{X_RIGHT}" y="{Y0}" fill="{pal["fg"]}">')
     for i, row in enumerate(rows):
         if row is None:
@@ -273,11 +410,11 @@ print(f"wrote {args.output_dir / 'dark_mode.svg'}, {args.output_dir / 'light_mod
 # The portrait, the readout and the language block all stay inside the card,
 # and readout rows end on the same column.
 assert ART_X + ART_W <= X_RIGHT, (ART_X + ART_W, X_RIGHT)
-assert ART_Y0 + (ROWS - 1) * ART_LINE_H < CARD_H
-assert X_RIGHT + WIDTH * (FS * 0.6) <= CARD_W
-assert BAR_X + BAR_W <= CARD_W
+assert ART_Y0 + (ROWS - 1) * ART_LINE_H < BAR_Y
+assert X_RIGHT + WIDTH * CHAR_W <= CARD_W
+assert BAR_X + BAR_W <= X_RIGHT
 assert max(LEGEND_ROWS) < CARD_H
-assert Y0 + (len(rows) - 1) * LINE_H < BAR_Y
+assert PROMPT_Y < CARD_H
 plain = re.compile(r"<[^>]+>")
 for i, row in enumerate(rows):
     if row is None:

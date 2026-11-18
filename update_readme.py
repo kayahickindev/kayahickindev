@@ -19,6 +19,7 @@ import urllib.error
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
 
+BIRTHDATE = date(2004, 1, 19)
 LOGIN = "kayahickindev"
 SVGS = ["dark_mode.svg", "light_mode.svg"]
 API = "https://api.github.com"
@@ -31,6 +32,8 @@ LANGUAGE_STATS_PATH = os.environ.get("LANGUAGE_STATS_PATH", "language_stats.json
 REFRESH_STATE_PATH = os.environ.get(
     "PROFILE_REFRESH_STATE_PATH", "profile_refresh_state.json"
 )
+METRICS_HISTORY_PATH = os.environ.get("METRICS_HISTORY_PATH", "metrics_history.json")
+METRICS_HISTORY_DAYS = 400
 
 REQUIRED_RAW_SITE_METRICS = (
     "appDownloads",
@@ -43,6 +46,7 @@ REQUIRED_DISPLAY_SITE_METRICS = ("arr",)
 
 # value ids on one line -> the dots tspan that absorbs their length changes
 LINE_GROUPS = [
+    (("age_data",), "age_data_dots"),
     (("downloads_data", "paid_data"), "paid_data_dots"),
     (("arr_data", "actions_data"), "actions_data_dots"),
     (("rating_data", "reviews_data"), "reviews_data_dots"),
@@ -51,6 +55,54 @@ LINE_GROUPS = [
     (("loc_add",), "loc_add_dots"),
     (("loc_del",), "loc_del_dots"),
 ]
+
+
+def uptime_string(today=None):
+    """Age as `22 years, 9 months, 30 days`, for the card's Uptime row."""
+    today = today or datetime.now(timezone.utc).date()
+    years = today.year - BIRTHDATE.year
+    months = today.month - BIRTHDATE.month
+    days = today.day - BIRTHDATE.day
+    if days < 0:
+        months -= 1
+        days += (today.replace(day=1) - timedelta(days=1)).day
+    if months < 0:
+        years -= 1
+        months += 12
+
+    def plural(count, unit):
+        return f"{count} {unit}" + ("" if count == 1 else "s")
+
+    return f"{plural(years, 'year')}, {plural(months, 'month')}, {plural(days, 'day')}"
+
+
+def record_metric_history(path, generated_at, downloads):
+    """Keep one downloads point per day, for the card's trend line.
+
+    The product endpoint only serves the latest snapshot, so the history the
+    sparkline draws has to be kept here. A day's point is replaced, not
+    duplicated, and a missing or damaged file starts a new series.
+    """
+    if not path:
+        return
+    day = datetime.fromisoformat(generated_at.replace("Z", "+00:00")).astimezone(
+        timezone.utc
+    ).date().isoformat()
+    points = {}
+    try:
+        with open(path) as history_file:
+            payload = json.load(history_file)
+        for point in payload.get("downloads", []):
+            if isinstance(point.get("date"), str) and isinstance(point.get("value"), int):
+                points[point["date"]] = point["value"]
+    except (OSError, json.JSONDecodeError, AttributeError):
+        print(f"starting a new metrics history at {path}")
+    points[day] = int(downloads)
+    kept = sorted(points.items())[-METRICS_HISTORY_DAYS:]
+    write_json(path, {
+        "version": 1,
+        "downloads": [{"date": date_, "value": value} for date_, value in kept],
+    })
 
 
 def gh(path, token, method="GET", body=None):
@@ -561,6 +613,10 @@ def fetch_stats(token, loc_cache_path=None, language_stats_path=None):
         f"{collection['startedAt']} to {collection['endedAt']} = "
         f"{contribution_total:,}"
     )
+    # A fork's bytes are mostly its upstream's code. Lines of code only count
+    # this user's commits, so forks stay in that total, but they would put
+    # languages on the bar that were never written here.
+    forks = {r["full_name"] for r in owned if r.get("fork")}
     loc_cache = load_loc_cache(loc_cache_path)
     # This lookup is slow on GitHub's side and times out often, which used to
     # fail the whole refresh. It runs on its own, and when it stays unavailable
@@ -595,8 +651,9 @@ def fetch_stats(token, loc_cache_path=None, language_stats_path=None):
         if not languages:
             print(f"skipping {name}: no GitHub-detected source languages")
             continue
-        for language, byte_count in languages.items():
-            language_totals[language] = language_totals.get(language, 0) + byte_count
+        if name not in forks:
+            for language, byte_count in languages.items():
+                language_totals[language] = language_totals.get(language, 0) + byte_count
         def checkpoint(entry, name=name):
             save_loc_cache(loc_cache_path, {**loc_cache, **refreshed_cache, name: entry})
 
@@ -685,9 +742,13 @@ def main():
         print("combined website/profile refresh already completed today; skipping fallback")
         return 0
 
-    values = {}
+    values = {"age_data": uptime_string()}
     site_values, metrics_generated_at = fetch_site_stats()
     values.update(site_values)
+    record_metric_history(
+        METRICS_HISTORY_PATH, metrics_generated_at,
+        site_values["downloads_data"].replace(",", ""),
+    )
     token = os.environ.get("ACCESS_TOKEN")
     if token:
         stats = fetch_stats(token, LOC_CACHE_PATH, LANGUAGE_STATS_PATH)

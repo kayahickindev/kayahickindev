@@ -58,9 +58,11 @@ never publish a partial total. Regression tests cover recovery and exhaustion.
 
 ## Layout
 
-The 985 by 472 card has the stipple portrait on the left (430 by 412 one-pixel
-cells from `ascii_art_dark.txt` and `ascii_art_light.txt`) and, on the right, a
-63-column monospace readout with the language bar beneath it.
+The 985 by 545 card has two columns. Left: the stipple portrait (430 by 412
+one-pixel cells from `ascii_art_dark.txt` and `ascii_art_light.txt`), then the
+language bar and its legend. Right: a 63-column monospace readout that ends on a
+`kaya@myfutureself:~$` prompt.
+
 Every dynamic value has a sibling `*_dots` span that absorbs length changes.
 Change the builder and `LINE_GROUPS` together when adding or removing metrics.
 The builder requires recorded values rather than silently inserting old numbers.
@@ -70,3 +72,21 @@ Name, role, company, location, contact links and follower count belong in
 GitHub's sidebar and are intentionally absent from the card. The portrait stays
 on the card: do not remove it when changing the readout. Regenerate it from
 `headshot.png` with `ascii_v3.py`.
+
+- **Uptime** is age from `BIRTHDATE` in `update_readme.py`, recorded on every
+  refresh like the other values.
+- **Language bar** leaves out `EXCLUDED_LANGUAGES` (SQL dialects and HTML):
+  database dumps and exported pages are not hand-written code, and PLpgSQL used
+  to lead the bar at 43%. `language_stats.json` still holds every language
+  from repositories that are not forks. A fork's bytes are its upstream's code
+  (the React Native fork alone was all of the C++), so forks count toward
+  lines of code, which only sums this user's commits, but not toward the bar.
+- **Downloads trend** draws the last 90 days of `metrics_history.json` where
+  the leader dots would go, with the gain across that window. The product
+  endpoint only serves the latest snapshot, so the refresh appends one point
+  per day to that file. The series before 2026-11-18 was recovered from the
+  values in past card commits.
+- **Motion** is CSS inside the SVG, which GitHub keeps for images. A cover
+  slides off the portrait on load (52 steps over 2.6 seconds) and the prompt's
+  cursor blinks. The cover rests off the portrait, so a viewer that does not
+  animate shows the finished card, and `prefers-reduced-motion` turns both off.
