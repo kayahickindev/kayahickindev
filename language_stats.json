@@ -1,43 +1,43 @@
 {
   "languages": [
     {
-      "bytes": 180696609,
+      "bytes": 180987738,
       "name": "PLpgSQL"
     },
     {
-      "bytes": 93712776,
+      "bytes": 97294320,
       "name": "TypeScript"
     },
     {
-      "bytes": 74168081,
+      "bytes": 74360133,
       "name": "JavaScript"
     },
     {
-      "bytes": 63046185,
+      "bytes": 65998946,
       "name": "Swift"
     },
     {
-      "bytes": 18272984,
+      "bytes": 18292237,
       "name": "HTML"
     },
     {
-      "bytes": 6220629,
+      "bytes": 6232337,
       "name": "Python"
     },
     {
-      "bytes": 4127893,
-      "name": "CSS"
-    },
-    {
-      "bytes": 1798991,
-      "name": "Shell"
-    },
-    {
-      "bytes": 480070,
+      "bytes": 4425526,
       "name": "Kotlin"
     },
     {
-      "bytes": 21381,
+      "bytes": 4135692,
+      "name": "CSS"
+    },
+    {
+      "bytes": 1812316,
+      "name": "Shell"
+    },
+    {
+      "bytes": 27374,
       "name": "Java"
     },
     {
@@ -49,7 +49,11 @@
       "name": "Objective-C"
     },
     {
-      "bytes": 5620,
+      "bytes": 8449,
+      "name": "Ruby"
+    },
+    {
+      "bytes": 5722,
       "name": "C"
     },
     {
