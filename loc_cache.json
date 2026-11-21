@@ -1,9 +1,9 @@
 {
   "repositories": {
     "MyFutureSelf/MyFutureSelf": {
-      "additions": 4448262,
-      "deletions": 1687852,
-      "headOid": "b2dfab8488774c1ca2ba34494e70fed82097dd19"
+      "additions": 4456737,
+      "deletions": 1688742,
+      "headOid": "ea1d8fd5dceacf2b21e3af83b1cb36a3931501af"
     },
     "MyFutureSelf/candidate-skills-assessment": {
       "additions": 363284,
@@ -26,9 +26,9 @@
       "headOid": "688a73136a82672644e930be5dae651f8b2db8aa"
     },
     "MyFutureSelf/mfs-company-brain": {
-      "additions": 17402082,
-      "deletions": 13804153,
-      "headOid": "756cbcabfc811fa798cb4d6b391323916c075823"
+      "additions": 17639385,
+      "deletions": 13921990,
+      "headOid": "a15ef643379d04b1f35ff0875c060c30ad2809a3"
     },
     "MyFutureSelf/mfs-company-map": {
       "additions": 461836,
@@ -46,9 +46,9 @@
       "headOid": "c5efc09d3b7823e609aec3e54b5bcca6e79c3bd0"
     },
     "MyFutureSelf/mfs-design-lab": {
-      "additions": 1303486,
+      "additions": 1303832,
       "deletions": 471457,
-      "headOid": "1c88a14451ecb471c94c69c9bbf5c2051bba5df9"
+      "headOid": "d919f175be0f91c10ed6af043bccd5fa37744587"
     },
     "MyFutureSelf/mfs-gtm": {
       "additions": 298440,
@@ -66,14 +66,14 @@
       "headOid": "fc033b033c62152d40ca48b54eaf59297cc439eb"
     },
     "MyFutureSelf/myfutureself-android": {
-      "additions": 2322951,
-      "deletions": 553396,
-      "headOid": "924d66e039fdeba67fa8acb429d68e41112ba91b"
+      "additions": 2327287,
+      "deletions": 553569,
+      "headOid": "80866fb9a4f01d1b369a28199d12332cfb30944f"
     },
     "MyFutureSelf/myfutureself-edu": {
-      "additions": 11896270,
-      "deletions": 4006481,
-      "headOid": "d5ed56f9cb8b4d36751ccb8dbf67e26d43656c64"
+      "additions": 11897349,
+      "deletions": 4006528,
+      "headOid": "081a88f5f10e014b612db5cb3f638f77a86f313e"
     },
     "MyFutureSelf/myfutureself-raise-crm": {
       "additions": 177013,
@@ -81,9 +81,9 @@
       "headOid": "14bb0e19aa44a6c8eaf4678a1fca182e2fe62044"
     },
     "MyFutureSelf/myfutureself-website": {
-      "additions": 119473,
-      "deletions": 15584,
-      "headOid": "3ac20404021d6d60b42a06786838be28423aaf06"
+      "additions": 120379,
+      "deletions": 15666,
+      "headOid": "d09ba0b2121f311e1ff84c41595eda6221da6774"
     },
     "MyFutureSelf/status": {
       "additions": 780,
@@ -130,6 +130,11 @@
       "deletions": 0,
       "headOid": "744fda23fc2780d8ca9579ccebf0db00daab98c4"
     },
+    "kayahickindev/jett-spotify-sync": {
+      "additions": 1442,
+      "deletions": 0,
+      "headOid": "1614065ce1afd46716c75bb9a9394ee2d7606a9f"
+    },
     "kayahickindev/kaya-site": {
       "additions": 30464,
       "deletions": 16884,
@@ -138,7 +143,7 @@
     "kayahickindev/kayahickindev": {
       "additions": 9201,
       "deletions": 4219,
-      "headOid": "7e72bb2c286a7a1fe7d8518ddd00664212330cf7"
+      "headOid": "041797bc5fcd0af22cf44936c4d67b14e643e6e5"
     },
     "kayahickindev/leadboost-sites": {
       "additions": 220505,
