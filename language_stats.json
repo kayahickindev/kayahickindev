@@ -5,56 +5,72 @@
       "name": "PLpgSQL"
     },
     {
-      "bytes": 99184704,
+      "bytes": 99608381,
       "name": "TypeScript"
     },
     {
-      "bytes": 78303340,
+      "bytes": 82489711,
       "name": "JavaScript"
     },
     {
-      "bytes": 67234988,
+      "bytes": 67871900,
       "name": "Swift"
     },
     {
-      "bytes": 18339871,
+      "bytes": 18341344,
       "name": "HTML"
     },
     {
-      "bytes": 6422515,
-      "name": "Python"
-    },
-    {
-      "bytes": 4454520,
+      "bytes": 9181034,
       "name": "Kotlin"
     },
     {
-      "bytes": 4135692,
+      "bytes": 7374692,
+      "name": "C++"
+    },
+    {
+      "bytes": 6813815,
+      "name": "Python"
+    },
+    {
+      "bytes": 4135217,
       "name": "CSS"
     },
     {
-      "bytes": 1943207,
+      "bytes": 2084377,
+      "name": "Objective-C++"
+    },
+    {
+      "bytes": 2006000,
       "name": "Shell"
     },
     {
-      "bytes": 27374,
+      "bytes": 971844,
+      "name": "Objective-C"
+    },
+    {
+      "bytes": 640297,
+      "name": "Ruby"
+    },
+    {
+      "bytes": 369943,
       "name": "Java"
+    },
+    {
+      "bytes": 180195,
+      "name": "CMake"
+    },
+    {
+      "bytes": 106533,
+      "name": "C"
     },
     {
       "bytes": 21152,
       "name": "Metal"
     },
     {
-      "bytes": 12075,
-      "name": "Objective-C"
-    },
-    {
-      "bytes": 8449,
-      "name": "Ruby"
-    },
-    {
-      "bytes": 5722,
-      "name": "C"
+      "bytes": 327,
+      "name": "Smarty"
     },
     {
       "bytes": 173,
