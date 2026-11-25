@@ -5,51 +5,51 @@
       "name": "PLpgSQL"
     },
     {
-      "bytes": 99608381,
+      "bytes": 128783355,
       "name": "TypeScript"
     },
     {
-      "bytes": 82489711,
+      "bytes": 85180021,
       "name": "JavaScript"
     },
     {
-      "bytes": 67871900,
+      "bytes": 68483316,
       "name": "Swift"
     },
     {
-      "bytes": 18341344,
+      "bytes": 18606241,
       "name": "HTML"
     },
     {
-      "bytes": 9181034,
+      "bytes": 9236649,
       "name": "Kotlin"
     },
     {
-      "bytes": 7374692,
+      "bytes": 7375686,
       "name": "C++"
     },
     {
-      "bytes": 6813815,
+      "bytes": 6893157,
       "name": "Python"
     },
     {
-      "bytes": 4135217,
+      "bytes": 4192920,
       "name": "CSS"
     },
     {
-      "bytes": 2084377,
+      "bytes": 2089333,
       "name": "Objective-C++"
     },
     {
-      "bytes": 2006000,
+      "bytes": 2068259,
       "name": "Shell"
     },
     {
-      "bytes": 971844,
+      "bytes": 971945,
       "name": "Objective-C"
     },
     {
-      "bytes": 640297,
+      "bytes": 643386,
       "name": "Ruby"
     },
     {
@@ -69,12 +69,20 @@
       "name": "Metal"
     },
     {
-      "bytes": 327,
-      "name": "Smarty"
+      "bytes": 4030,
+      "name": "Gherkin"
     },
     {
-      "bytes": 173,
+      "bytes": 3388,
       "name": "Dockerfile"
+    },
+    {
+      "bytes": 1304,
+      "name": "Vue"
+    },
+    {
+      "bytes": 327,
+      "name": "Smarty"
     }
   ],
   "version": 1
