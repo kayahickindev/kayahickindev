@@ -5,15 +5,15 @@
       "name": "PLpgSQL"
     },
     {
-      "bytes": 129447356,
+      "bytes": 129502166,
       "name": "TypeScript"
     },
     {
-      "bytes": 85360608,
+      "bytes": 85372529,
       "name": "JavaScript"
     },
     {
-      "bytes": 68681045,
+      "bytes": 68674797,
       "name": "Swift"
     },
     {
@@ -25,11 +25,11 @@
       "name": "Kotlin"
     },
     {
-      "bytes": 7378579,
+      "bytes": 7380000,
       "name": "C++"
     },
     {
-      "bytes": 6942127,
+      "bytes": 7067034,
       "name": "Python"
     },
     {
@@ -37,12 +37,12 @@
       "name": "CSS"
     },
     {
-      "bytes": 2089851,
-      "name": "Objective-C++"
+      "bytes": 2125216,
+      "name": "Shell"
     },
     {
-      "bytes": 2070569,
-      "name": "Shell"
+      "bytes": 2089851,
+      "name": "Objective-C++"
     },
     {
       "bytes": 971945,
